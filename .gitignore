@@ -1,0 +1,6 @@
+# generated code
+src/
+test/*/generic*.cpp
+
+# clion
+.idea
