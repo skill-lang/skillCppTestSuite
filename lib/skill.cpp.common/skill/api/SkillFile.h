@@ -9,6 +9,7 @@
 #include "String.h"
 #include "../internal/AbstractStoragePool.h"
 #include "../streams/FileInputStream.h"
+#include "StringAccess.h"
 
 namespace skill {
     namespace api {
@@ -36,7 +37,7 @@ namespace skill {
          */
         class SkillFile {
         protected:
-            internal::StringPool *const strings;
+            api::StringAccess *const strings;
 
             /**
              * types managed by this file

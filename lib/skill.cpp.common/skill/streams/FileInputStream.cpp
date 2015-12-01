@@ -5,7 +5,6 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include "FileInputStream.h"
-#include "../api/SkillException.h"
 
 using namespace skill::streams;
 

@@ -26,7 +26,7 @@ namespace skill {
              * how many instances are to be read from file, which is quite helpful
              */
             Book<T> *book;
-            
+
         public:
             /**
              * @note internal use only!
@@ -66,8 +66,12 @@ namespace skill {
 
         public:
 
-            T *get(SKilLID id) const {
+            inline T *get(SKilLID id) const {
                 return id <= 0 ? nullptr : data[id];
+            }
+
+            virtual api::Object *getAsAnnotation(SKilLID id) const {
+                return get(id);
             }
         };
     }

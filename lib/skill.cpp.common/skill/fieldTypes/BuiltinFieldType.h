@@ -18,14 +18,14 @@ namespace skill {
         template<typename T, TypeID id>
         class BuiltinFieldType : public FieldType {
 
-        public:
+        protected:
             BuiltinFieldType() : FieldType(id) { }
         };
 
         template<typename T, TypeID id>
         class ConstantFieldType : public BuiltinFieldType<T, id> {
 
-        public:
+        protected:
             ConstantFieldType(T value) : BuiltinFieldType<T, id>(), value(value) { }
 
             /**
@@ -173,10 +173,6 @@ namespace skill {
                 SK_TODO;
             }
         };
-
-
-
-//! TODO annotation
 
         const FixedSizeType<bool, 6, InStream::boolBox, 1> BoolType;
         const FixedSizeType<int8_t, 7, InStream::i8Box, 1> I8;

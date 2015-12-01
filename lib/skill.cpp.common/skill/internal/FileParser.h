@@ -9,6 +9,7 @@
 #include "../api/SkillFile.h"
 #include "ParseException.h"
 #include "../fieldTypes/BuiltinFieldType.h"
+#include "../fieldTypes/AnnotationType.h"
 #include "../streams/FileInputStream.h"
 #include "StringPool.h"
 #include "AbstractStoragePool.h"
@@ -26,9 +27,6 @@
  */
 #define debugOnly if(0)
 
-//! TODO replace by actual implementation
-typedef int AnnotationType;
-
 namespace skill {
     using namespace streams;
     using namespace fieldTypes;
@@ -40,10 +38,10 @@ namespace skill {
          * of the respective user type may follow after the field declaration.
          */
         inline const FieldType *parseFieldType(FileInputStream *in,
-                                        const std::vector<AbstractStoragePool *> *types,
-                                        StringPool *String,
-                                        AnnotationType *Annotation,
-                                        int blockCounter) {
+                                               const std::vector<AbstractStoragePool *> *types,
+                                               StringPool *String,
+                                               AnnotationType *Annotation,
+                                               int blockCounter) {
             const TypeID i = (TypeID) in->v64();
             switch (i) {
                 case 0 :
@@ -56,9 +54,8 @@ namespace skill {
                     return new ConstantI64(in->i64());
                 case 4 :
                     return new ConstantV64(in->v64());
-
-                    //case 5 :
-                    //  Annotation
+                case 5 :
+                    return Annotation;
                 case 6 :
                     return &BoolType;
                 case 7 :
@@ -75,8 +72,8 @@ namespace skill {
                     return &F32;
                 case 13:
                     return &F64;
-                    //  case 14:
-                    //    String
+                case 14:
+                    return String;
                     /*   case 15:
                            ConstantLengthArray(in.v64.toInt, parseFieldType(in, types, String, Annotation, blockCounter))
                        case 17:
@@ -94,7 +91,7 @@ namespace skill {
                         return types->at(i - 32);
                     else
                         throw ParseException(in, blockCounter,
-                                                             "Invalid type ID");
+                                             "Invalid type ID");
             }
 
         }
@@ -129,10 +126,10 @@ namespace skill {
             };
 
             // PARSE STATE
-            StringPool *String = new StringPool(in);
-            std::vector<AbstractStoragePool *> *types = new std::vector<AbstractStoragePool *>();
-            api::typeByName_t *typesByName = new api::typeByName_t;
-            AnnotationType *Annotation = new AnnotationType;
+            StringPool *const String = new StringPool(in);
+            std::vector<AbstractStoragePool *> *const types = new std::vector<AbstractStoragePool *>();
+            api::typeByName_t *const typesByName = new api::typeByName_t;
+            AnnotationType *const Annotation = new AnnotationType(types, typesByName, String);
             std::vector<MappedInStream *> dataList;
 
             // process stream
@@ -191,7 +188,7 @@ namespace skill {
                         // check null name
                         if (nullptr == name)
                             throw ParseException(in, blockCounter,
-                                                                 "Corrupted file, nullptr in typename");
+                                                 "Corrupted file, nullptr in typename");
 
                         debugOnly {
                             std::cout << "processing type " << *name << " at " << in->getPosition()
@@ -282,7 +279,7 @@ namespace skill {
                             const auto &b = definition->superPool->blocks.back();
                             if (lbpo < b.bpo || b.bpo + b.dynamicCount < lbpo)
                                 throw ParseException(in, blockCounter,
-                                                                     "Found broken bpo.");
+                                                     "Found broken bpo.");
                         }
 
                         // static count and cached size are updated in the resize phase
@@ -330,7 +327,7 @@ namespace skill {
                             const TypeID id = (TypeID) in->v64();
                             if (id <= 0 || legalFieldIDBarrier < id)
                                 throw ParseException(in, blockCounter,
-                                                                     "Found an illegal field ID.");
+                                                     "Found an illegal field ID.");
 
                             long endOffset = 0;
                             if (id == legalFieldIDBarrier) {
@@ -339,7 +336,7 @@ namespace skill {
                                 const api::String fieldName = String->get((SKilLID) in->v64());
                                 if (!fieldName)
                                     throw ParseException(in, blockCounter,
-                                                                         "A field has a nullptr as name.");
+                                                         "A field has a nullptr as name.");
 
                                 debugOnly {
                                     std::cout << "processing new field " << *p->name << "." << *fieldName

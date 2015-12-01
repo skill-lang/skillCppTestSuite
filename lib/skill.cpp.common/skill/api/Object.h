@@ -11,6 +11,9 @@ namespace skill {
     namespace internal {
         class AbstractStoragePool;
     }
+    namespace fieldTypes {
+        class AnnotationType;
+    }
     namespace api {
 
         /**
@@ -19,6 +22,8 @@ namespace skill {
          */
         class Object {
             friend class internal::AbstractStoragePool;
+
+            friend class fieldTypes::AnnotationType;
 
         protected:
             SKilLID id;
@@ -35,7 +40,7 @@ namespace skill {
             /**
              * return the skill name of the type of this object
              */
-            virtual const std::string* skillName() const = 0;
+            virtual const char *skillName() const = 0;
 
             /**
              * query, whether the object is marked for deletion and will be destroyed on flush

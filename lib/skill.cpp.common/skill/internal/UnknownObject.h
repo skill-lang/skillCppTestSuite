@@ -15,7 +15,7 @@ namespace skill {
         class Book;
 
         class UnknownObject : public api::Object {
-            const String _skillName;
+            const char* _skillName;
 
             //! bulk allocation constructor
             UnknownObject() : _skillName(nullptr) { };
@@ -27,9 +27,9 @@ namespace skill {
             }
 
             UnknownObject(SKilLID id, String const name)
-                    : Object(id), _skillName(name) { }
+                    : Object(id), _skillName(name->c_str()) { }
 
-            virtual String skillName() const {
+            virtual const char* skillName() const {
                 return _skillName;
             }
         };

@@ -6,20 +6,22 @@
 #define SKILL_CPP_COMMON_SKILLSTATE_H
 
 #include "../api/SkillFile.h"
+#include "../fieldTypes/AnnotationType.h"
 
 namespace skill {
     namespace internal {
 
         class SkillState : public api::SkillFile {
+        protected:
+            fieldTypes::AnnotationType *const annotation;
         public:
             //! TODO make private and remove test code!
             SkillState(streams::FileInputStream *in, api::WriteMode mode,
-                       StringPool *stringPool, int *annotation,
+                       StringPool *stringPool, fieldTypes::AnnotationType *annotation,
                        std::vector<AbstractStoragePool *> *types,
                        api::typeByName_t *typesByName)
-                    : SkillFile(in, mode, stringPool, types, typesByName) {
-                //! TODO no solution;)
-                delete annotation;
+                    : SkillFile(in, mode, stringPool, types, typesByName),
+                      annotation(annotation) {
             }
 
             virtual ~SkillState();

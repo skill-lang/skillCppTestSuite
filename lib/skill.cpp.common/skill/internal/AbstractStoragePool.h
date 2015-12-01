@@ -12,8 +12,8 @@
 #include "FieldDeclaration.h"
 #include "../fieldTypes/FieldType.h"
 #include "../utils.h"
-#include "../fieldTypes/BuiltinFieldType.h"
 #include "../restrictions/TypeRestriction.h"
+#include "../fieldTypes/BuiltinFieldType.h"
 
 namespace skill {
     namespace api {
@@ -74,6 +74,14 @@ namespace skill {
              * @note will parallelize over blocks and can be invoked in parallel
              */
             virtual void allocateInstances() = 0;
+
+            /**
+             * returns an instance by skillID, without further knowledge of the type
+             * of the returned instance.
+             *
+             * @note if there is static knowledge that the pool is of type T, a cast to T* is always safe
+             */
+            virtual api::Object* getAsAnnotation(SKilLID id) const = 0;
 
             /**
              * restrictions of this pool
@@ -166,7 +174,7 @@ namespace skill {
             }
 
             virtual uint64_t offset(api::Box &target) const {
-                return fieldTypes::V64.offset(target.annotation->id);
+                return fieldTypes::V64FieldType::offset(target.annotation->id);
             }
 
             virtual void write(outstream &out, api::Box &target) const {

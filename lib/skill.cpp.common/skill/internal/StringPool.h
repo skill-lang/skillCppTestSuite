@@ -23,16 +23,12 @@ namespace skill {
          * @author Timm Felden
          */
         class StringPool : public StringAccess {
-            std::mutex lock;
+            mutable std::mutex lock;
 
             streams::FileInputStream *in;
 
             // note: this is public, because most internal stuff uses this
         public:
-            StringPool(streams::FileInputStream *in);
-
-            virtual ~StringPool();
-
             /**
    * the set of known strings, including new strings
    *
@@ -41,7 +37,17 @@ namespace skill {
    * Furthermore, we can unify type and field names, thus we do not have to have duplicate names laying around,
    * improving the performance of hash containers and name checks:)
    */
-            std::unordered_set<String, equalityHash, equalityEquals> knownStrings;
+            mutable std::unordered_set<String, equalityHash, equalityEquals> knownStrings;
+
+            /**
+             * get string by ID
+             */
+            mutable std::vector<String> idMap;
+
+
+            StringPool(streams::FileInputStream *in);
+
+            virtual ~StringPool();
 
             /**
              * ID ⇀ (absolute offset, length)
@@ -53,17 +59,12 @@ namespace skill {
             std::vector<std::pair<long, int>> stringPositions;
 
 
-            /**
-             * get string by ID
-             */
-            std::vector<String> idMap;
-
             virtual String add(const char *target);
 
             /**
              * search a string by id it had inside of the read file, may block if the string has not yet been read
              */
-            String get(SKilLID index) {
+            String get(SKilLID index) const {
                 if (index <= 0) return nullptr;
                 else {
                     auto result = idMap[index];
@@ -98,6 +99,21 @@ namespace skill {
                     }
                     return result;
                 }
+            }
+
+            virtual api::Box read(streams::MappedInStream &in) const {
+                api::Box r;
+                r.string = get(in.v64());
+                return r;
+            }
+
+            virtual uint64_t offset(api::Box &target) const {
+                return fieldTypes::V64FieldType::offset(target.string->id);
+            }
+
+            virtual void write(outstream &out, api::Box &target) const {
+                SK_TODO;
+                //out.v64(target.string->id);
             }
         };
     }

@@ -6,6 +6,7 @@
 #define SKILL_CPP_COMMON_STRINGACCESS_H
 
 #include "String.h"
+#include "../fieldTypes/BuiltinFieldType.h"
 
 namespace skill {
     namespace api {
@@ -14,8 +15,10 @@ namespace skill {
          *
          * @author Timm Felden
          */
-        class StringAccess {
+        struct StringAccess : public fieldTypes::BuiltinFieldType<String, 14> {
             virtual String add(const char *target) = 0;
+
+            virtual ~StringAccess() { };
         };
     }
 }
