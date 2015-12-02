@@ -4,8 +4,12 @@
 
 #include "AbstractStoragePool.h"
 #include "../restrictions/TypeRestriction.h"
+#include "UnknownObject.h"
+#include "Book.h"
+#include "StoragePool.h"
 
 using namespace skill;
+using namespace internal;
 using restrictions::TypeRestriction;
 
 skill::internal::AbstractStoragePool::AbstractStoragePool(TypeID typeID, AbstractStoragePool *superPool,
@@ -30,6 +34,6 @@ SKilLID skill::internal::AbstractStoragePool::newDynamicInstancesSize() const {
 internal::AbstractStoragePool::~AbstractStoragePool() {
     delete restrictions;
 
-    for(auto f : dataFields)
+    for (auto f : dataFields)
         delete f;
 }

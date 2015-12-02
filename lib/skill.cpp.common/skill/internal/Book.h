@@ -41,6 +41,12 @@ namespace skill {
                 pages.push_back(currentPage);
             }
 
+            virtual ~Book() {
+                for (T *page : pages) {
+                    delete[] page;
+                }
+            }
+
             /**
              * return the next free instance
              */

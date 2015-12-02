@@ -30,3 +30,5 @@ add_executable(runTests ${SOURCE_FILES} ${TEST_FILES})
 # Link test executable against gtest & gtest_main
 target_link_libraries(runTests skill.cpp.common gtest gtest_main)
 add_test(runTests runTests)
+
+set_property(TARGET runTests PROPERTY INTERPROCEDURAL_OPTIMIZATION True)

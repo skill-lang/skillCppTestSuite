@@ -21,6 +21,8 @@ namespace skill {
         class StoragePool : public AbstractStoragePool {
 
         protected:
+            friend class AbstractStoragePool;
+
             /**
              * allocated when all instances are allocated, because by then, we can now
              * how many instances are to be read from file, which is quite helpful
@@ -62,8 +64,13 @@ namespace skill {
             StoragePool(TypeID typeID, AbstractStoragePool *superPool,
                         const api::string_t *name, std::set<TypeRestriction *> *restrictions)
                     : AbstractStoragePool(typeID, superPool, name, restrictions),
+                      book(nullptr),
                       data(nullptr) { }
 
+            virtual ~StoragePool() {
+                if (book)
+                    delete book;
+            }
 
         public:
 

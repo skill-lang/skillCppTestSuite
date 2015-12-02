@@ -18,6 +18,8 @@ namespace skill {
         template<class T, class B>
         class UnknownSubPool : public SubPool<T, B> {
 
+            void allocateDeferred();
+
         public:
             UnknownSubPool(TypeID typeID, AbstractStoragePool *superPool,
                            const api::string_t *name,
@@ -36,6 +38,10 @@ namespace skill {
                 auto rval = new LazyField(type, name);
                 this->dataFields.push_back(rval);
                 return rval;
+            }
+
+            virtual void allocateInstances(){
+                allocateDeferred();
             }
         };
     }

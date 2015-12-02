@@ -11,6 +11,7 @@
 #include "BasePool.h"
 #include "../restrictions/TypeRestriction.h"
 #include "UnknownSubPool.h"
+#include "UnknownSubPool.implementation.h"
 
 namespace skill {
     using restrictions::TypeRestriction;
