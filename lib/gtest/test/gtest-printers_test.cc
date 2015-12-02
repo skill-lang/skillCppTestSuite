@@ -50,17 +50,13 @@
 
 #include "gtest/gtest.h"
 
-// hash_map and hash_set are available under Visual C++, or on Linux.
-#if GTEST_HAS_HASH_MAP_
+// hash_map and hash_set are available under Visual C++.
+#if _MSC_VER
+# define GTEST_HAS_HASH_MAP_ 1  // Indicates that hash_map is available.
 # include <hash_map>            // NOLINT
-#endif  // GTEST_HAS_HASH_MAP_
-#if GTEST_HAS_HASH_SET_
+# define GTEST_HAS_HASH_SET_ 1  // Indicates that hash_set is available.
 # include <hash_set>            // NOLINT
-#endif  // GTEST_HAS_HASH_SET_
-
-#if GTEST_HAS_STD_FORWARD_LIST_
-# include <forward_list> // NOLINT
-#endif  // GTEST_HAS_STD_FORWARD_LIST_
+#endif  // GTEST_OS_WINDOWS
 
 // Some user-defined types for testing the universal value printer.
 
@@ -129,7 +125,6 @@ namespace foo {
 class UnprintableInFoo {
  public:
   UnprintableInFoo() : z_(0) { memcpy(xy_, "\xEF\x12\x0\x0\x34\xAB\x0\x0", 8); }
-  double z() const { return z_; }
  private:
   char xy_[8];
   double z_;
@@ -206,13 +201,18 @@ using ::testing::internal::FormatForComparisonFailureMessage;
 using ::testing::internal::ImplicitCast_;
 using ::testing::internal::NativeArray;
 using ::testing::internal::RE;
-using ::testing::internal::RelationToSourceReference;
 using ::testing::internal::Strings;
 using ::testing::internal::UniversalPrint;
 using ::testing::internal::UniversalPrinter;
 using ::testing::internal::UniversalTersePrint;
 using ::testing::internal::UniversalTersePrintTupleFieldsToStrings;
+using ::testing::internal::kReference;
 using ::testing::internal::string;
+
+#if GTEST_HAS_TR1_TUPLE
+using ::std::tr1::make_tuple;
+using ::std::tr1::tuple;
+#endif
 
 // The hash_* classes are not part of the C++ standard.  STLport
 // defines them in namespace std.  MSVC defines them in ::stdext.  GCC
@@ -413,6 +413,8 @@ TEST(PrintCStringTest, EscapesProperly) {
             "\\n\\r\\t\\v\\x7F\\xFF a\"",
             Print(p));
 }
+
+
 
 // MSVC compiler can be configured to define whar_t as a typedef
 // of unsigned short. Defining an overload for const wchar_t* in that case
@@ -917,17 +919,6 @@ TEST(PrintStlContainerTest, MultiSet) {
   EXPECT_EQ("{ 1, 1, 1, 2, 5 }", Print(set1));
 }
 
-#if GTEST_HAS_STD_FORWARD_LIST_
-// <slist> is available on Linux in the google3 mode, but not on
-// Windows or Mac OS X.
-
-TEST(PrintStlContainerTest, SinglyLinkedList) {
-  int a[] = { 9, 2, 8 };
-  const std::forward_list<int> ints(a, a + 3);
-  EXPECT_EQ("{ 9, 2, 8 }", Print(ints));
-}
-#endif  // GTEST_HAS_STD_FORWARD_LIST_
-
 TEST(PrintStlContainerTest, Pair) {
   pair<const bool, int> p(true, 5);
   EXPECT_EQ("(true, 5)", Print(p));
@@ -961,13 +952,13 @@ TEST(PrintStlContainerTest, NestedContainer) {
 
 TEST(PrintStlContainerTest, OneDimensionalNativeArray) {
   const int a[3] = { 1, 2, 3 };
-  NativeArray<int> b(a, 3, RelationToSourceReference());
+  NativeArray<int> b(a, 3, kReference);
   EXPECT_EQ("{ 1, 2, 3 }", Print(b));
 }
 
 TEST(PrintStlContainerTest, TwoDimensionalNativeArray) {
   const int a[2][3] = { { 1, 2, 3 }, { 4, 5, 6 } };
-  NativeArray<int[3]> b(a, 2, RelationToSourceReference());
+  NativeArray<int[3]> b(a, 2, kReference);
   EXPECT_EQ("{ { 1, 2, 3 }, { 4, 5, 6 } }", Print(b));
 }
 
@@ -994,47 +985,46 @@ TEST(PrintStlContainerTest, ConstIterator) {
 }
 
 #if GTEST_HAS_TR1_TUPLE
-// Tests printing ::std::tr1::tuples.
+// Tests printing tuples.
 
 // Tuples of various arities.
-TEST(PrintTr1TupleTest, VariousSizes) {
-  ::std::tr1::tuple<> t0;
+TEST(PrintTupleTest, VariousSizes) {
+  tuple<> t0;
   EXPECT_EQ("()", Print(t0));
 
-  ::std::tr1::tuple<int> t1(5);
+  tuple<int> t1(5);
   EXPECT_EQ("(5)", Print(t1));
 
-  ::std::tr1::tuple<char, bool> t2('a', true);
+  tuple<char, bool> t2('a', true);
   EXPECT_EQ("('a' (97, 0x61), true)", Print(t2));
 
-  ::std::tr1::tuple<bool, int, int> t3(false, 2, 3);
+  tuple<bool, int, int> t3(false, 2, 3);
   EXPECT_EQ("(false, 2, 3)", Print(t3));
 
-  ::std::tr1::tuple<bool, int, int, int> t4(false, 2, 3, 4);
+  tuple<bool, int, int, int> t4(false, 2, 3, 4);
   EXPECT_EQ("(false, 2, 3, 4)", Print(t4));
 
-  ::std::tr1::tuple<bool, int, int, int, bool> t5(false, 2, 3, 4, true);
+  tuple<bool, int, int, int, bool> t5(false, 2, 3, 4, true);
   EXPECT_EQ("(false, 2, 3, 4, true)", Print(t5));
 
-  ::std::tr1::tuple<bool, int, int, int, bool, int> t6(false, 2, 3, 4, true, 6);
+  tuple<bool, int, int, int, bool, int> t6(false, 2, 3, 4, true, 6);
   EXPECT_EQ("(false, 2, 3, 4, true, 6)", Print(t6));
 
-  ::std::tr1::tuple<bool, int, int, int, bool, int, int> t7(
-      false, 2, 3, 4, true, 6, 7);
+  tuple<bool, int, int, int, bool, int, int> t7(false, 2, 3, 4, true, 6, 7);
   EXPECT_EQ("(false, 2, 3, 4, true, 6, 7)", Print(t7));
 
-  ::std::tr1::tuple<bool, int, int, int, bool, int, int, bool> t8(
+  tuple<bool, int, int, int, bool, int, int, bool> t8(
       false, 2, 3, 4, true, 6, 7, true);
   EXPECT_EQ("(false, 2, 3, 4, true, 6, 7, true)", Print(t8));
 
-  ::std::tr1::tuple<bool, int, int, int, bool, int, int, bool, int> t9(
+  tuple<bool, int, int, int, bool, int, int, bool, int> t9(
       false, 2, 3, 4, true, 6, 7, true, 9);
   EXPECT_EQ("(false, 2, 3, 4, true, 6, 7, true, 9)", Print(t9));
 
   const char* const str = "8";
   // VC++ 2010's implementation of tuple of C++0x is deficient, requiring
   // an explicit type cast of NULL to be used.
-  ::std::tr1::tuple<bool, char, short, testing::internal::Int32,  // NOLINT
+  tuple<bool, char, short, testing::internal::Int32,  // NOLINT
       testing::internal::Int64, float, double, const char*, void*, string>
       t10(false, 'a', 3, 4, 5, 1.5F, -2.5, str,
           ImplicitCast_<void*>(NULL), "10");
@@ -1044,72 +1034,12 @@ TEST(PrintTr1TupleTest, VariousSizes) {
 }
 
 // Nested tuples.
-TEST(PrintTr1TupleTest, NestedTuple) {
-  ::std::tr1::tuple< ::std::tr1::tuple<int, bool>, char> nested(
-      ::std::tr1::make_tuple(5, true), 'a');
+TEST(PrintTupleTest, NestedTuple) {
+  tuple<tuple<int, bool>, char> nested(make_tuple(5, true), 'a');
   EXPECT_EQ("((5, true), 'a' (97, 0x61))", Print(nested));
 }
 
 #endif  // GTEST_HAS_TR1_TUPLE
-
-#if GTEST_HAS_STD_TUPLE_
-// Tests printing ::std::tuples.
-
-// Tuples of various arities.
-TEST(PrintStdTupleTest, VariousSizes) {
-  ::std::tuple<> t0;
-  EXPECT_EQ("()", Print(t0));
-
-  ::std::tuple<int> t1(5);
-  EXPECT_EQ("(5)", Print(t1));
-
-  ::std::tuple<char, bool> t2('a', true);
-  EXPECT_EQ("('a' (97, 0x61), true)", Print(t2));
-
-  ::std::tuple<bool, int, int> t3(false, 2, 3);
-  EXPECT_EQ("(false, 2, 3)", Print(t3));
-
-  ::std::tuple<bool, int, int, int> t4(false, 2, 3, 4);
-  EXPECT_EQ("(false, 2, 3, 4)", Print(t4));
-
-  ::std::tuple<bool, int, int, int, bool> t5(false, 2, 3, 4, true);
-  EXPECT_EQ("(false, 2, 3, 4, true)", Print(t5));
-
-  ::std::tuple<bool, int, int, int, bool, int> t6(false, 2, 3, 4, true, 6);
-  EXPECT_EQ("(false, 2, 3, 4, true, 6)", Print(t6));
-
-  ::std::tuple<bool, int, int, int, bool, int, int> t7(
-      false, 2, 3, 4, true, 6, 7);
-  EXPECT_EQ("(false, 2, 3, 4, true, 6, 7)", Print(t7));
-
-  ::std::tuple<bool, int, int, int, bool, int, int, bool> t8(
-      false, 2, 3, 4, true, 6, 7, true);
-  EXPECT_EQ("(false, 2, 3, 4, true, 6, 7, true)", Print(t8));
-
-  ::std::tuple<bool, int, int, int, bool, int, int, bool, int> t9(
-      false, 2, 3, 4, true, 6, 7, true, 9);
-  EXPECT_EQ("(false, 2, 3, 4, true, 6, 7, true, 9)", Print(t9));
-
-  const char* const str = "8";
-  // VC++ 2010's implementation of tuple of C++0x is deficient, requiring
-  // an explicit type cast of NULL to be used.
-  ::std::tuple<bool, char, short, testing::internal::Int32,  // NOLINT
-      testing::internal::Int64, float, double, const char*, void*, string>
-      t10(false, 'a', 3, 4, 5, 1.5F, -2.5, str,
-          ImplicitCast_<void*>(NULL), "10");
-  EXPECT_EQ("(false, 'a' (97, 0x61), 3, 4, 5, 1.5, -2.5, " + PrintPointer(str) +
-            " pointing to \"8\", NULL, \"10\")",
-            Print(t10));
-}
-
-// Nested tuples.
-TEST(PrintStdTupleTest, NestedTuple) {
-  ::std::tuple< ::std::tuple<int, bool>, char> nested(
-      ::std::make_tuple(5, true), 'a');
-  EXPECT_EQ("((5, true), 'a' (97, 0x61))", Print(nested));
-}
-
-#endif  // GTEST_LANG_CXX11
 
 // Tests printing user-defined unprintable types.
 
@@ -1176,6 +1106,44 @@ TEST(PrintPrintableTypeTest, TemplateInUserNamespace) {
   EXPECT_EQ("PrintableViaPrintToTemplate: 5",
             Print(::foo::PrintableViaPrintToTemplate<int>(5)));
 }
+
+#if GTEST_HAS_PROTOBUF_
+
+// Tests printing a protocol message.
+TEST(PrintProtocolMessageTest, PrintsShortDebugString) {
+  testing::internal::TestMessage msg;
+  msg.set_member("yes");
+  EXPECT_EQ("<member:\"yes\">", Print(msg));
+}
+
+// Tests printing a short proto2 message.
+TEST(PrintProto2MessageTest, PrintsShortDebugStringWhenItIsShort) {
+  testing::internal::FooMessage msg;
+  msg.set_int_field(2);
+  msg.set_string_field("hello");
+  EXPECT_PRED2(RE::FullMatch, Print(msg),
+               "<int_field:\\s*2\\s+string_field:\\s*\"hello\">");
+}
+
+// Tests printing a long proto2 message.
+TEST(PrintProto2MessageTest, PrintsDebugStringWhenItIsLong) {
+  testing::internal::FooMessage msg;
+  msg.set_int_field(2);
+  msg.set_string_field("hello");
+  msg.add_names("peter");
+  msg.add_names("paul");
+  msg.add_names("mary");
+  EXPECT_PRED2(RE::FullMatch, Print(msg),
+               "<\n"
+               "int_field:\\s*2\n"
+               "string_field:\\s*\"hello\"\n"
+               "names:\\s*\"peter\"\n"
+               "names:\\s*\"paul\"\n"
+               "names:\\s*\"mary\"\n"
+               ">");
+}
+
+#endif  // GTEST_HAS_PROTOBUF_
 
 // Tests that the universal printer prints both the address and the
 // value of a reference.
@@ -1565,31 +1533,28 @@ TEST(UniversalPrintTest, WorksForCharArray) {
 
 #if GTEST_HAS_TR1_TUPLE
 
-TEST(UniversalTersePrintTupleFieldsToStringsTestWithTr1, PrintsEmptyTuple) {
-  Strings result = UniversalTersePrintTupleFieldsToStrings(
-      ::std::tr1::make_tuple());
+TEST(UniversalTersePrintTupleFieldsToStringsTest, PrintsEmptyTuple) {
+  Strings result = UniversalTersePrintTupleFieldsToStrings(make_tuple());
   EXPECT_EQ(0u, result.size());
 }
 
-TEST(UniversalTersePrintTupleFieldsToStringsTestWithTr1, PrintsOneTuple) {
-  Strings result = UniversalTersePrintTupleFieldsToStrings(
-      ::std::tr1::make_tuple(1));
+TEST(UniversalTersePrintTupleFieldsToStringsTest, PrintsOneTuple) {
+  Strings result = UniversalTersePrintTupleFieldsToStrings(make_tuple(1));
   ASSERT_EQ(1u, result.size());
   EXPECT_EQ("1", result[0]);
 }
 
-TEST(UniversalTersePrintTupleFieldsToStringsTestWithTr1, PrintsTwoTuple) {
-  Strings result = UniversalTersePrintTupleFieldsToStrings(
-      ::std::tr1::make_tuple(1, 'a'));
+TEST(UniversalTersePrintTupleFieldsToStringsTest, PrintsTwoTuple) {
+  Strings result = UniversalTersePrintTupleFieldsToStrings(make_tuple(1, 'a'));
   ASSERT_EQ(2u, result.size());
   EXPECT_EQ("1", result[0]);
   EXPECT_EQ("'a' (97, 0x61)", result[1]);
 }
 
-TEST(UniversalTersePrintTupleFieldsToStringsTestWithTr1, PrintsTersely) {
+TEST(UniversalTersePrintTupleFieldsToStringsTest, PrintsTersely) {
   const int n = 1;
   Strings result = UniversalTersePrintTupleFieldsToStrings(
-      ::std::tr1::tuple<const int&, const char*>(n, "a"));
+      tuple<const int&, const char*>(n, "a"));
   ASSERT_EQ(2u, result.size());
   EXPECT_EQ("1", result[0]);
   EXPECT_EQ("\"a\"", result[1]);
@@ -1597,39 +1562,5 @@ TEST(UniversalTersePrintTupleFieldsToStringsTestWithTr1, PrintsTersely) {
 
 #endif  // GTEST_HAS_TR1_TUPLE
 
-#if GTEST_HAS_STD_TUPLE_
-
-TEST(UniversalTersePrintTupleFieldsToStringsTestWithStd, PrintsEmptyTuple) {
-  Strings result = UniversalTersePrintTupleFieldsToStrings(::std::make_tuple());
-  EXPECT_EQ(0u, result.size());
-}
-
-TEST(UniversalTersePrintTupleFieldsToStringsTestWithStd, PrintsOneTuple) {
-  Strings result = UniversalTersePrintTupleFieldsToStrings(
-      ::std::make_tuple(1));
-  ASSERT_EQ(1u, result.size());
-  EXPECT_EQ("1", result[0]);
-}
-
-TEST(UniversalTersePrintTupleFieldsToStringsTestWithStd, PrintsTwoTuple) {
-  Strings result = UniversalTersePrintTupleFieldsToStrings(
-      ::std::make_tuple(1, 'a'));
-  ASSERT_EQ(2u, result.size());
-  EXPECT_EQ("1", result[0]);
-  EXPECT_EQ("'a' (97, 0x61)", result[1]);
-}
-
-TEST(UniversalTersePrintTupleFieldsToStringsTestWithStd, PrintsTersely) {
-  const int n = 1;
-  Strings result = UniversalTersePrintTupleFieldsToStrings(
-      ::std::tuple<const int&, const char*>(n, "a"));
-  ASSERT_EQ(2u, result.size());
-  EXPECT_EQ("1", result[0]);
-  EXPECT_EQ("\"a\"", result[1]);
-}
-
-#endif  // GTEST_HAS_STD_TUPLE_
-
 }  // namespace gtest_printers_test
 }  // namespace testing
-
