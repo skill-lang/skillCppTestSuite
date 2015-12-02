@@ -12,19 +12,16 @@ namespace skill {
     namespace internal {
 
         class SkillState : public api::SkillFile {
-        protected:
-            fieldTypes::AnnotationType *const annotation;
         public:
             //! TODO make private and remove test code!
             SkillState(streams::FileInputStream *in, api::WriteMode mode,
                        StringPool *stringPool, fieldTypes::AnnotationType *annotation,
-                       std::vector<AbstractStoragePool *> *types,
+                       std::vector<std::unique_ptr<AbstractStoragePool>> *types,
                        api::typeByName_t *typesByName)
-                    : SkillFile(in, mode, stringPool, types, typesByName),
-                      annotation(annotation) {
+                    : SkillFile(in, mode, stringPool, types, typesByName, annotation) {
             }
 
-            virtual ~SkillState();
+            virtual ~SkillState() { };
 
         };
     }

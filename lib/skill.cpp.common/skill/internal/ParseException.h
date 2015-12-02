@@ -14,17 +14,21 @@ namespace skill {
         /**
          * creates a parse exception
          */
-        inline SkillException ParseException(streams::FileInputStream *stream, int blockCount,
+        inline SkillException ParseException(std::unique_ptr<streams::FileInputStream>& stream, int blockCount,
                                              std::string msg) {
             std::stringstream message;
-            message << "ParseException in file" << stream->getPath() << "\n Position" << stream->getPosition()
+            message << "ParseException in file" << stream->getPath()
+            << "\n Position" << stream->getPosition()
+            << "\n Block" << blockCount
             << "\n reason: " << msg << std::endl;
             return SkillException(message.str());
         }
 
-        inline SkillException ParseException(streams::InStream *stream, int blockCount, std::string msg) {
+        inline SkillException ParseException(InStream* stream, int blockCount,
+                                             std::string msg) {
             std::stringstream message;
-            message << "ParseException in mapped stream.\n Position" << stream->getPosition() << "\n reason: "
+            message << "ParseException in mapped stream.\n Position" << stream->getPosition()
+            << "\n Block" << blockCount << "\n reason: "
             << msg << std::endl;
             return SkillException(message.str());
         }

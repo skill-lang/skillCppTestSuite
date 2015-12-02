@@ -6,6 +6,7 @@
 #define SKILL_CPP_COMMON_SKILLFILE_H
 
 #include <unordered_map>
+#include <bits/unique_ptr.h>
 #include "String.h"
 #include "../internal/AbstractStoragePool.h"
 #include "../streams/FileInputStream.h"
@@ -38,11 +39,12 @@ namespace skill {
         class SkillFile {
         protected:
             api::StringAccess *const strings;
+            fieldTypes::AnnotationType *const annotation;
 
             /**
              * types managed by this file
              */
-            const std::vector<internal::AbstractStoragePool *> *const types;
+            const std::vector<std::unique_ptr<internal::AbstractStoragePool>> *const types;
 
             /**
              * typename -> type mapping
@@ -56,8 +58,9 @@ namespace skill {
              */
             streams::FileInputStream *const fromFile;
 
-            SkillFile(streams::FileInputStream *string, WriteMode mode, internal::StringPool *pPool,
-                      std::vector<internal::AbstractStoragePool *> *pVector, typeByName_t *pMap);
+            SkillFile(streams::FileInputStream *in, WriteMode mode, internal::StringPool *stringPool,
+                      std::vector<std::unique_ptr<internal::AbstractStoragePool>> *types, typeByName_t *typesByName,
+                      fieldTypes::AnnotationType *annotation);
 
         public:
             /**

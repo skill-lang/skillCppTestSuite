@@ -28,6 +28,8 @@ namespace skill {
             FieldType(const TypeID typeID) : typeID(typeID) { }
 
         public:
+            virtual ~FieldType() { }
+
             //! the id of this type
             const TypeID typeID;
 
@@ -39,12 +41,19 @@ namespace skill {
             /**
              * calculate the offset of a single box
              */
-            virtual uint64_t offset(api::Box &target) const = 0;
+            virtual uint64_t offset(const api::Box &target) const = 0;
 
             /**
              * write a box to a stream
              */
             virtual void write(outstream &out, api::Box &target) const = 0;
+
+            /**
+             * @return if true, then the object pointed to is to be deleted,
+             * by the destructor of the owning field declaration or type
+             * @note internal use only
+             */
+            virtual bool requiresDestruction() const = 0;
         };
     }
 }

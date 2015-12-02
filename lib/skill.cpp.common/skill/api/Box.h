@@ -28,16 +28,20 @@ namespace skill {
             float f32;
             double f64;
             String string;
-            //! T[] & T[i]
+            //! T[i]
             Box *array;
-            //! list<T>*
+            //! T[] & list<T>*
             std::vector<Box> *list;
             std::set<Box> *set;
             std::map<Box, Box> *map;
             Object *annotation;
         };
 
-        static_assert(sizeof(Box) == sizeof(void *),
+        inline bool operator<(const Box l, const Box r) {
+            return l.i64 < r.i64;
+        }
+
+        static_assert(sizeof(Box) == sizeof(int64_t),
                       "I exepct Box and void* to have the same size and a similar behaviour");
     }
 }

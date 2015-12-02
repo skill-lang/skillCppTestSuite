@@ -22,6 +22,7 @@ namespace skill {
             AbstractField(const FieldType *const type, String const name)
                     : type(type), name(name) { }
 
+            virtual ~AbstractField();
         public:
 
             const FieldType *const type;

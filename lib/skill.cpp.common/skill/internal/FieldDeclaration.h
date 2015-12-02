@@ -22,7 +22,7 @@ namespace skill {
                     : AbstractField(type, name) { }
 
         public:
-            virtual ~FieldDeclaration() { }
+            virtual ~FieldDeclaration() { };
 
             void addChunk(Chunk *c) {
                 //! TODO not a solution;)

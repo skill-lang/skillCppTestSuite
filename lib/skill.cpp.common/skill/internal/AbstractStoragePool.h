@@ -31,10 +31,13 @@ namespace skill {
             AbstractStoragePool(TypeID typeID, AbstractStoragePool *superPool,
                                 api::String const name, std::set<TypeRestriction *> *restrictions);
 
+        public:
+            virtual ~AbstractStoragePool();
+
+        protected:
+
             friend class api::SkillFile;
 
-            //! only skill files can delete pools
-            virtual ~AbstractStoragePool();
 
             virtual SKilLID newObjectsSize() const = 0;
 
@@ -81,7 +84,7 @@ namespace skill {
              *
              * @note if there is static knowledge that the pool is of type T, a cast to T* is always safe
              */
-            virtual api::Object* getAsAnnotation(SKilLID id) const = 0;
+            virtual api::Object *getAsAnnotation(SKilLID id) const = 0;
 
             /**
              * restrictions of this pool
@@ -170,15 +173,24 @@ namespace skill {
             virtual FieldDeclaration *addField(TypeID id, const FieldType *type, api::String name) = 0;
 
             virtual api::Box read(streams::MappedInStream &in) const {
-                SK_TODO;
+                api::Box r;
+                r.annotation = getAsAnnotation(in.v64());
+                return r;
             }
 
-            virtual uint64_t offset(api::Box &target) const {
+            virtual uint64_t offset(const api::Box &target) const {
                 return fieldTypes::V64FieldType::offset(target.annotation->id);
             }
 
             virtual void write(outstream &out, api::Box &target) const {
                 SK_TODO;
+            }
+
+            /**
+             * destroyed by the skill file
+             */
+            virtual bool requiresDestruction() const {
+                return false;
             }
         };
     }

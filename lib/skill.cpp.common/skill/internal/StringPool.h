@@ -27,8 +27,6 @@ namespace skill {
 
             streams::FileInputStream *in;
 
-            // note: this is public, because most internal stuff uses this
-        public:
             /**
    * the set of known strings, including new strings
    *
@@ -44,11 +42,6 @@ namespace skill {
              */
             mutable std::vector<String> idMap;
 
-
-            StringPool(streams::FileInputStream *in);
-
-            virtual ~StringPool();
-
             /**
              * ID ⇀ (absolute offset, length)
              *
@@ -58,16 +51,33 @@ namespace skill {
              */
             std::vector<std::pair<long, int>> stringPositions;
 
+            /**
+             * next legal ID, used to check access
+             */
+            SKilLID lastID;
+
+        public:
+            StringPool(streams::FileInputStream *in);
+
+            virtual ~StringPool();
+
 
             virtual String add(const char *target);
+
+            inline void addPosition(std::pair<long, int> position) {
+                idMap.push_back(nullptr);
+                stringPositions.push_back(position);
+                lastID++;
+            }
 
             /**
              * search a string by id it had inside of the read file, may block if the string has not yet been read
              */
             String get(SKilLID index) const {
                 if (index <= 0) return nullptr;
+                else if (index > lastID) throw SkillException("index of StringPool::get too large");
                 else {
-                    auto result = idMap[index];
+                    String result = idMap[index];
                     if (nullptr == result) {
                         // this kind of synchronization is not correct in general and I should know better not to do,
                         // stuff like that (but I did it anyway:) )
@@ -107,13 +117,20 @@ namespace skill {
                 return r;
             }
 
-            virtual uint64_t offset(api::Box &target) const {
+            virtual uint64_t offset(const api::Box &target) const {
                 return fieldTypes::V64FieldType::offset(target.string->id);
             }
 
             virtual void write(outstream &out, api::Box &target) const {
                 SK_TODO;
                 //out.v64(target.string->id);
+            }
+
+            /**
+             * destroyed by the skill file
+             */
+            virtual bool requiresDestruction() const {
+                return false;
             }
         };
     }

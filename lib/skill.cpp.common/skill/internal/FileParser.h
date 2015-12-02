@@ -38,7 +38,7 @@ namespace skill {
          * of the respective user type may follow after the field declaration.
          */
         inline const FieldType *parseFieldType(FileInputStream *in,
-                                               const std::vector<AbstractStoragePool *> *types,
+                                               const std::vector<std::unique_ptr<AbstractStoragePool>> *types,
                                                StringPool *String,
                                                AnnotationType *Annotation,
                                                int blockCounter) {
@@ -74,21 +74,24 @@ namespace skill {
                     return &F64;
                 case 14:
                     return String;
-                    /*   case 15:
-                           ConstantLengthArray(in.v64.toInt, parseFieldType(in, types, String, Annotation, blockCounter))
-                       case 17:
-                           VariableLengthArray(parseFieldType(in, types, String, Annotation, blockCounter))
-                       case 18:
-                           ListType(parseFieldType(in, types, String, Annotation, blockCounter))
-                       case 19:
-                           SetType(parseFieldType(in, types, String, Annotation, blockCounter))
-                       case 20:
-                           MapType(parseFieldType(in, types, String, Annotation, blockCounter),
-                                   parseFieldType(in, types, String, Annotation, blockCounter))
-               */
+                case 15: {
+                    int64_t length = in->v64();
+                    auto t = parseFieldType(in, types, String, Annotation, blockCounter);
+                    return new ConstantLengthArray(length, t);
+                }
+                case 17:
+                    return new VariableLengthArray(parseFieldType(in, types, String, Annotation, blockCounter));
+                case 18:
+                    return new ListType(parseFieldType(in, types, String, Annotation, blockCounter));
+                case 19:
+                    return new SetType(parseFieldType(in, types, String, Annotation, blockCounter));
+                case 20:
+                    return new MapType(parseFieldType(in, types, String, Annotation, blockCounter),
+                                       parseFieldType(in, types, String, Annotation, blockCounter));
+
                 default:
                     if (i >= 32 && i - 32 < (TypeID) types->size())
-                        return types->at(i - 32);
+                        return types->at(i - 32).get();
                     else
                         throw ParseException(in, blockCounter,
                                              "Invalid type ID");
@@ -112,11 +115,11 @@ namespace skill {
                                      WriteMode mode,
                                      StringPool *String,
                                      AnnotationType *Annotation,
-                                     std::vector<AbstractStoragePool *> *types,
+                                     std::vector<std::unique_ptr<AbstractStoragePool>> *types,
                                      api::typeByName_t *typesByName,
-                                     std::vector<MappedInStream *> &dataList)
+                                     std::vector<std::unique_ptr<MappedInStream>> &dataList)
         >
-        SkillFile *parseFile(FileInputStream *in, WriteMode mode) {
+        SkillFile *parseFile(std::unique_ptr<FileInputStream> in, WriteMode mode) {
             struct LFEntry {
                 LFEntry(AbstractStoragePool *const pool, SKilLID count)
                         : pool(pool), count(count) { }
@@ -126,11 +129,13 @@ namespace skill {
             };
 
             // PARSE STATE
-            StringPool *const String = new StringPool(in);
-            std::vector<AbstractStoragePool *> *const types = new std::vector<AbstractStoragePool *>();
-            api::typeByName_t *const typesByName = new api::typeByName_t;
-            AnnotationType *const Annotation = new AnnotationType(types, typesByName, String);
-            std::vector<MappedInStream *> dataList;
+            std::unique_ptr<StringPool> String(new StringPool(in.get()));
+            std::unique_ptr<std::vector<std::unique_ptr<AbstractStoragePool>>> types(
+                    new std::vector<std::unique_ptr<AbstractStoragePool>>());
+            std::unique_ptr<api::typeByName_t> typesByName(new api::typeByName_t);
+            std::unique_ptr<AnnotationType> Annotation(
+                    new AnnotationType(types.get(), typesByName.get(), String.get()));
+            std::vector<std::unique_ptr<MappedInStream>> dataList;
 
             // process stream
             debugOnly {
@@ -153,8 +158,7 @@ namespace skill {
                         const long position = in->getPosition() + 4 * count;
                         for (int i = count; i != 0; i--) {
                             offset = in->i32();
-                            String->stringPositions.push_back(std::pair<long, int>(position + last, offset - last));
-                            String->idMap.push_back(nullptr);
+                            String->addPosition(std::pair<long, int>(position + last, offset - last));
                             last = offset;
                         }
                         in->jump(in->getPosition() + last);
@@ -248,7 +252,7 @@ namespace skill {
                                         std::string("Type ").append(*name).append(
                                                 " refers to an ill-formed super type."));
                             } else {
-                                superPool = types->at(superID - 1);
+                                superPool = types->at(superID - 1).get();
                                 assert(superPool);
                             }
 
@@ -256,7 +260,7 @@ namespace skill {
                             AbstractStoragePool *r = newPool(
                                     (TypeID) types->size() + 32, name, superPool, rest);
 
-                            types->push_back(r);
+                            types->push_back(std::unique_ptr<AbstractStoragePool>(r));
                             defIter = typesByName->insert(
                                     std::pair<api::String, AbstractStoragePool *>(name, r)).first;
                         }
@@ -343,7 +347,8 @@ namespace skill {
                                     << " at " << in->getPosition() << std::endl;
                                 }
 
-                                const auto t = parseFieldType(in, types, String, Annotation, blockCounter);
+                                const auto t = parseFieldType(in.get(), types.get(), String.get(), Annotation.get(),
+                                                              blockCounter);
 
                                 // parse field restrictions
                                 int fieldRestrictionCount = (int) in->v64();
@@ -451,7 +456,7 @@ namespace skill {
 
 
                     // jump over data and continue in the next block
-                    dataList.push_back(in->jumpAndMap(dataEnd));
+                    dataList.push_back(std::unique_ptr<MappedInStream>(in->jumpAndMap(dataEnd)));
                 } catch (SkillException e) {
                     throw e;
                 } catch (...) {
@@ -460,7 +465,8 @@ namespace skill {
             }
 
             // note there still isn't a single instance
-            return makeState(in, mode, String, Annotation, types, typesByName, dataList);
+            return makeState(in.release(), mode, String.release(), Annotation.release(), types.release(), typesByName.release(),
+                             dataList);
         }
     }
 }

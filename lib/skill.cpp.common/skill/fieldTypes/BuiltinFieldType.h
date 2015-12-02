@@ -24,6 +24,10 @@ namespace skill {
 
         template<typename T, TypeID id>
         class ConstantFieldType : public BuiltinFieldType<T, id> {
+        public:
+            virtual bool requiresDestruction() const {
+                return true;
+            }
 
         protected:
             ConstantFieldType(T value) : BuiltinFieldType<T, id>(), value(value) { }
@@ -33,7 +37,7 @@ namespace skill {
              */
             const T value;
 
-            virtual uint64_t offset(api::Box &target) const {
+            virtual uint64_t offset(const api::Box &target) const {
                 return 0;
             }
 
@@ -111,6 +115,10 @@ namespace skill {
             virtual api::Box read(streams::MappedInStream &in) const {
                 return Read(in);
             }
+
+            virtual bool requiresDestruction() const {
+                return false;
+            }
         };
 
         /**
@@ -127,7 +135,7 @@ namespace skill {
                 return Read(in);
             }
 
-            virtual uint64_t offset(api::Box &target) const {
+            virtual uint64_t offset(const api::Box &target) const {
                 return size;
             }
 
@@ -165,7 +173,7 @@ namespace skill {
                        );
             }
 
-            virtual uint64_t offset(api::Box &target) const {
+            virtual uint64_t offset(const api::Box &target) const {
                 return offset(target.i64);
             }
 
@@ -182,6 +190,169 @@ namespace skill {
         const V64FieldType V64;
         const FixedSizeType<float, 12, InStream::f32Box, 4> F32;
         const FixedSizeType<double, 13, InStream::f64Box, 8> F64;
+
+        template<typename T, TypeID id>
+        struct SingleBaseTypeContainer : public BuiltinFieldType<T *, 15> {
+            const FieldType *const base;
+
+            SingleBaseTypeContainer(const FieldType *const base) : base(base) { }
+
+            virtual ~SingleBaseTypeContainer() {
+                if (base->requiresDestruction())
+                    delete base;
+            }
+
+            virtual bool requiresDestruction() const {
+                return true;
+            }
+
+        };
+
+        struct ConstantLengthArray : public SingleBaseTypeContainer<api::Box *, 15> {
+            const size_t length;
+
+            ConstantLengthArray(int64_t length, const FieldType *const base)
+                    : SingleBaseTypeContainer<api::Box *, 15>(base), length((size_t) length) { }
+
+            virtual api::Box read(streams::MappedInStream &in) const {
+                api::Box r;
+                r.array = new api::Box[length];
+                for (size_t i = 0; i < length; i++)
+                    r.array[i] = this->base->read(in);
+                return r;
+            }
+
+            virtual uint64_t offset(const api::Box &target) const {
+                uint64_t rval = 0;
+                for (size_t i = 0; i < length; i++)
+                    rval += this->base->offset(target.array[i]);
+                return rval;
+            }
+
+            virtual void write(outstream &out, api::Box &target) const {
+                SK_TODO;
+            }
+        };
+
+        struct VariableLengthArray : public SingleBaseTypeContainer<std::vector<api::Box> *, 17> {
+
+            VariableLengthArray(const FieldType *const base)
+                    : SingleBaseTypeContainer(base) { }
+
+            virtual api::Box read(streams::MappedInStream &in) const {
+                api::Box r;
+                size_t length = (size_t) in.v64();
+                r.list = new std::vector<api::Box>;
+                for (size_t i = 0; i < length; i++)
+                    r.list->push_back(this->base->read(in));
+                return r;
+            }
+
+            virtual uint64_t offset(const api::Box &target) const {
+                uint64_t rval = V64FieldType::offset((int64_t) target.list->size());
+                for (auto b : *target.list)
+                    rval += this->base->offset(b);
+                return rval;
+            }
+
+            virtual void write(outstream &out, api::Box &target) const {
+                SK_TODO;
+            }
+        };
+
+        struct ListType : public SingleBaseTypeContainer<std::vector<api::Box> *, 18> {
+
+            ListType(const FieldType *const base)
+                    : SingleBaseTypeContainer(base) { }
+
+            virtual api::Box read(streams::MappedInStream &in) const {
+                api::Box r;
+                size_t length = (size_t) in.v64();
+                r.list = new std::vector<api::Box>;
+                for (size_t i = 0; i < length; i++)
+                    r.list->push_back(this->base->read(in));
+                return r;
+            }
+
+            virtual uint64_t offset(const api::Box &target) const {
+                uint64_t rval = V64FieldType::offset((int64_t) target.list->size());
+                for (auto b : *target.list)
+                    rval += this->base->offset(b);
+                return rval;
+            }
+
+            virtual void write(outstream &out, api::Box &target) const {
+                SK_TODO;
+            }
+        };
+
+        struct SetType : public SingleBaseTypeContainer<std::set<api::Box> *, 19> {
+
+            SetType(const FieldType *const base)
+                    : SingleBaseTypeContainer(base) { }
+
+            virtual api::Box read(streams::MappedInStream &in) const {
+                api::Box r;
+                size_t length = (size_t) in.v64();
+                r.set = new std::set<api::Box>;
+                for (size_t i = 0; i < length; i++)
+                    r.set->insert(this->base->read(in));
+                return r;
+            }
+
+            virtual uint64_t offset(const api::Box &target) const {
+                uint64_t rval = V64FieldType::offset((int64_t) target.set->size());
+                for (auto b : *target.set)
+                    rval += this->base->offset(b);
+                return rval;
+            }
+
+            virtual void write(outstream &out, api::Box &target) const {
+                SK_TODO;
+            }
+        };
+
+        struct MapType : public BuiltinFieldType<std::map<api::Box, api::Box> *, 20> {
+            const FieldType *const key;
+            const FieldType *const value;
+
+            MapType(const FieldType *const key, const FieldType *const value)
+                    : key(key), value(value) { }
+
+            virtual ~MapType() {
+                if (key->requiresDestruction())
+                    delete key;
+                if (value->requiresDestruction())
+                    delete value;
+            }
+
+            virtual api::Box read(streams::MappedInStream &in) const {
+                api::Box r;
+                size_t length = (size_t) in.v64();
+                r.map = new std::map<api::Box, api::Box>;
+                for (size_t i = 0; i < length; i++)
+                    r.map->at(key->read(in)) = value->read(in);
+                return r;
+            }
+
+            virtual uint64_t offset(const api::Box &target) const {
+                uint64_t rval = V64FieldType::offset((int64_t) target.map->size());
+                for (auto b : *target.map) {
+                    rval += key->offset(b.first);
+                    rval += value->offset(b.second);
+                }
+                return rval;
+            }
+
+            virtual void write(outstream &out, api::Box &target) const {
+                SK_TODO;
+            }
+
+            virtual bool requiresDestruction() const {
+                return true;
+            }
+        };
+
     }
 
 }

@@ -61,7 +61,8 @@ namespace skill {
 
             StoragePool(TypeID typeID, AbstractStoragePool *superPool,
                         const api::string_t *name, std::set<TypeRestriction *> *restrictions)
-                    : AbstractStoragePool(typeID, superPool, name, restrictions) { }
+                    : AbstractStoragePool(typeID, superPool, name, restrictions),
+                      data(nullptr) { }
 
 
         public:

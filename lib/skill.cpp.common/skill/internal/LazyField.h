@@ -16,6 +16,8 @@ namespace skill {
             LazyField(const FieldType *const type, const api::string_t *name)
                     : FieldDeclaration(type, name) { }
 
+            virtual ~LazyField() { }
+
             virtual api::Box getR(const api::Object *i);
 
             virtual void setR(api::Object *i, api::Box v);

@@ -5,3 +5,8 @@
 #include "AbstractField.h"
 
 using namespace skill::api;
+
+AbstractField::~AbstractField() {
+    if (type->requiresDestruction())
+        delete type;
+}

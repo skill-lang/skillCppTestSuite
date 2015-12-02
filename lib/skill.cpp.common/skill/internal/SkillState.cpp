@@ -3,7 +3,3 @@
 //
 
 #include "SkillState.h"
-
-skill::internal::SkillState::~SkillState() {
-    delete annotation;
-}

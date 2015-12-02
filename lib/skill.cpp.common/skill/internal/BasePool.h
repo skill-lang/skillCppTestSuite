@@ -20,7 +20,8 @@ namespace skill {
             }
 
             virtual ~BasePool() {
-                delete[] (1 + this->data);
+                if (this->data)
+                    delete[] (1 + this->data);
             }
 
         public:
