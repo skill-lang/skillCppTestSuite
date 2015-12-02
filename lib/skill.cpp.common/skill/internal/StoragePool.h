@@ -27,7 +27,7 @@ namespace skill {
              * allocated when all instances are allocated, because by then, we can now
              * how many instances are to be read from file, which is quite helpful
              */
-            Book<T> *book;
+            Book <T> *book;
 
         public:
             /**
@@ -43,11 +43,13 @@ namespace skill {
 
             virtual void allocateInstances() {
                 book = new Book<T>(staticDataInstances);
+                T *page = book->firstPage();
+                int idx = 0;
                 for (const auto &b : blocks) {
                     SKilLID i = b.bpo + 1;
                     const auto last = i + b.staticCount;
                     for (; i < last; i++)
-                        data[i] = new(book->next()) T(i + 1);
+                        data[i] = new(page + idx++) T(i);
                 }
             }
 

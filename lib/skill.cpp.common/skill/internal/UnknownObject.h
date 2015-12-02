@@ -15,13 +15,22 @@ namespace skill {
         class Book;
 
         class UnknownObject : public api::Object {
-            const char* _skillName;
+            const char *_skillName;
 
             //! bulk allocation constructor
-            UnknownObject() : _skillName(nullptr) { };
+            UnknownObject() { };
+
             friend class Book<UnknownObject>;
 
         public:
+            /**
+             * !internal use only!
+             */
+            inline void byPassConstruction(SKilLID id, const char *name) {
+                this->id = id;
+                _skillName = name;
+            }
+
             UnknownObject(SKilLID id) : Object(id), _skillName(nullptr) {
                 throw SkillException("one cannot create an unknown object without supllying a name");
             }
@@ -29,7 +38,7 @@ namespace skill {
             UnknownObject(SKilLID id, String const name)
                     : Object(id), _skillName(name->c_str()) { }
 
-            virtual const char* skillName() const {
+            virtual const char *skillName() const {
                 return _skillName;
             }
         };

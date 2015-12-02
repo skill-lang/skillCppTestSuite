@@ -29,12 +29,10 @@ namespace skill {
             SKilLID id;
 
             //! bulk allocation
-            Object() : id(0) { }
+            Object() { }
 
             //! actual constructor
             Object(SKilLID id) : id(id) { }
-
-            virtual ~Object() { }
 
         public:
             /**

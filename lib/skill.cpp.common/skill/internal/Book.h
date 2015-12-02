@@ -7,6 +7,7 @@
 
 #include <vector>
 #include "../common.h"
+#include <cassert>
 
 namespace skill {
     namespace internal {
@@ -25,7 +26,6 @@ namespace skill {
              * we need remaining and next index, because pages can have variable size
              */
             int currentPageRemaining;
-            int currentPageNextIndex;
 
             //! size of unhinted pages
             static const int defaultPageSize = 128;
@@ -37,7 +37,7 @@ namespace skill {
              */
             Book(SKilLID expectedSize)
                     : freelist(), pages(), currentPage(new T[expectedSize]),
-                      currentPageRemaining(expectedSize), currentPageNextIndex(0) {
+                      currentPageRemaining(0) {
                 pages.push_back(currentPage);
             }
 
@@ -48,13 +48,22 @@ namespace skill {
             }
 
             /**
+             * returns the first page. only to be used on initial allocateInstances call!
+             */
+            T *firstPage() {
+                assert(pages[0] == currentPage);
+                return currentPage;
+            }
+
+            /**
              * return the next free instance
+             *
+             * @note must never be called, while using the first page
              */
             T *next() {
                 // first we try to take from current page
                 if (currentPageRemaining) {
-                    --currentPageRemaining;
-                    return currentPage + (currentPageNextIndex++);
+                    return currentPage + (defaultPageSize - currentPageRemaining--);
                 } else if (freelist.size()) {
                     // deplete freelist before allocating a new page
                     T *r = freelist.back();
@@ -63,12 +72,9 @@ namespace skill {
                 } else {
                     // we have to allocate a new page
                     currentPage = new T[defaultPageSize];
-                    currentPageRemaining = defaultPageSize;
-                    currentPageNextIndex = 0;
-
                     // return first object
-                    --currentPageRemaining;
-                    return currentPage + (currentPageNextIndex++);
+                    currentPageRemaining = defaultPageSize - 1;
+                    return currentPage;
                 }
             }
 
