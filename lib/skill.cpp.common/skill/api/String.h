@@ -77,6 +77,9 @@ namespace skill {
                     : std::string(c, length), id(id), hash(mkHash(*this)) { }
 
         public:
+            SKilLID getID() const {
+                return id;
+            }
         };
 
         using skill::api::String;

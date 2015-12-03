@@ -104,6 +104,10 @@ namespace skill {
          * parses a skill file; parametrized by specification dependent functionality.
          */
         template<
+                //!ensures that names of pools and known fields are known upfront, so that it is safe
+                // to compare their names by pointer value
+                StringPool *initializeStrings(FileInputStream *),
+
                 //!create a new pool in the target type system
                 AbstractStoragePool *newPool(TypeID typeID,
                                              String name,
@@ -129,7 +133,7 @@ namespace skill {
             };
 
             // PARSE STATE
-            std::unique_ptr<StringPool> String(new StringPool(in.get()));
+            std::unique_ptr<StringPool> String(initializeStrings(in.get()));
             std::unique_ptr<std::vector<std::unique_ptr<AbstractStoragePool>>> types(
                     new std::vector<std::unique_ptr<AbstractStoragePool>>());
             std::unique_ptr<api::typeByName_t> typesByName(new api::typeByName_t);
@@ -465,7 +469,8 @@ namespace skill {
             }
 
             // note there still isn't a single instance
-            return makeState(in.release(), mode, String.release(), Annotation.release(), types.release(), typesByName.release(),
+            return makeState(in.release(), mode, String.release(), Annotation.release(), types.release(),
+                             typesByName.release(),
                              dataList);
         }
     }

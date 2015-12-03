@@ -18,6 +18,14 @@ namespace skill {
     namespace internal {
 
         /**
+         * String keepers keep references to known strings as fields, so that they can be accessed in
+         * constant time with a guarantee of uniqueness.
+         */
+        struct AbstractStringKeeper {
+
+        };
+
+        /**
          * Implementation of all string handling.
          *
          * @author Timm Felden
@@ -36,6 +44,8 @@ namespace skill {
    * improving the performance of hash containers and name checks:)
    */
             mutable std::unordered_set<String, equalityHash, equalityEquals> knownStrings;
+
+            const AbstractStringKeeper *const keeper;
 
             /**
              * get string by ID
@@ -57,7 +67,7 @@ namespace skill {
             SKilLID lastID;
 
         public:
-            StringPool(streams::FileInputStream *in);
+            StringPool(streams::FileInputStream *in, AbstractStringKeeper* keeper);
 
             virtual ~StringPool();
 

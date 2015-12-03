@@ -7,8 +7,8 @@
 using namespace skill;
 using api::String;
 
-internal::StringPool::StringPool(streams::FileInputStream *in)
-        : lock(), in(in), knownStrings(), idMap(), stringPositions(), lastID(0) {
+internal::StringPool::StringPool(streams::FileInputStream *in, AbstractStringKeeper *keeper)
+        : lock(), in(in), knownStrings(), keeper(keeper), idMap(), stringPositions(), lastID(0) {
     // ensure existence of fake entry
     stringPositions.push_back(std::pair<long, int>(-1L, -1));
     idMap.push_back(nullptr);
@@ -29,4 +29,5 @@ String internal::StringPool::add(const char *target) {
 internal::StringPool::~StringPool() {
     for (auto s : knownStrings)
         delete s;
+    delete keeper;
 }
