@@ -3,3 +3,8 @@
 //
 
 #include "UnknownObject.h"
+#include "AbstractStoragePool.h"
+
+const char *skill::internal::UnknownObject::skillName() const {
+    return owner->name->c_str();
+}

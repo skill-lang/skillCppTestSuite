@@ -41,14 +41,13 @@ namespace skill {
                 book = new Book<UnknownObject>(staticDataInstances);
                 UnknownObject *page = book->firstPage();
                 int idx = 0;
-                const char *const n = name->c_str();
                 for (const auto &b : blocks) {
                     SKilLID i = b.bpo + 1;
                     const auto last = i + b.staticCount;
                     for (; i < last; i++) {
                         UnknownObject *const p = page + idx++;
                         data[i] = p;
-                        p->byPassConstruction(i, n);
+                        p->byPassConstruction(i, this);
                     }
                 }
             }

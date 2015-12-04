@@ -15,7 +15,7 @@ namespace skill {
         class Book;
 
         class UnknownObject : public api::Object {
-            const char *_skillName;
+            const AbstractStoragePool *owner;
 
             //! bulk allocation constructor
             UnknownObject() { };
@@ -26,21 +26,19 @@ namespace skill {
             /**
              * !internal use only!
              */
-            inline void byPassConstruction(SKilLID id, const char *name) {
+            inline void byPassConstruction(SKilLID id, AbstractStoragePool *owner) {
                 this->id = id;
-                _skillName = name;
+                this->owner = owner;
             }
 
-            UnknownObject(SKilLID id) : Object(id), _skillName(nullptr) {
+            UnknownObject(SKilLID id) : Object(id), owner(nullptr) {
                 throw SkillException("one cannot create an unknown object without supllying a name");
             }
 
-            UnknownObject(SKilLID id, String const name)
-                    : Object(id), _skillName(name->c_str()) { }
+            UnknownObject(SKilLID id, const AbstractStoragePool *owner)
+                    : Object(id), owner(owner) { }
 
-            virtual const char *skillName() const {
-                return _skillName;
-            }
+            virtual const char *skillName() const;
         };
     }
 }
