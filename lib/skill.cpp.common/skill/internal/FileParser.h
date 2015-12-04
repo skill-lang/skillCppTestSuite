@@ -220,7 +220,7 @@ namespace skill {
 
                             // type restrictions
                             int restrictionCount = (int) in->v64();
-                            std::set<TypeRestriction *> *rest = new std::set<TypeRestriction *>;
+                            auto rest = std::unique_ptr<std::set<TypeRestriction *>>(new std::set<TypeRestriction *>);
                             //! TODO restrictions
                             // rest.sizeHint(restrictionCount)
                             while (restrictionCount-- > 0) {
@@ -263,7 +263,8 @@ namespace skill {
 
                             // allocate pool
                             AbstractStoragePool *r = newPool(
-                                    (TypeID) types->size() + 32, name, superPool, rest, String->keeper);
+                                    (TypeID) types->size() + 32, name, superPool, rest.get(), String->keeper);
+                            rest.release();
 
                             types->push_back(std::unique_ptr<AbstractStoragePool>(r));
                             defIter = typesByName->insert(
