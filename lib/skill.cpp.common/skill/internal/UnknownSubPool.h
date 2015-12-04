@@ -40,7 +40,7 @@ namespace skill {
                 return rval;
             }
 
-            virtual void allocateInstances(){
+            virtual void allocateInstances() {
                 allocateDeferred();
             }
         };

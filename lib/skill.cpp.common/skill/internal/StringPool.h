@@ -44,8 +44,10 @@ namespace skill {
    * improving the performance of hash containers and name checks:)
    */
             mutable std::unordered_set<String, equalityHash, equalityEquals> knownStrings;
-
+        public:
             const AbstractStringKeeper *const keeper;
+
+        private:
 
             /**
              * get string by ID
@@ -67,7 +69,7 @@ namespace skill {
             SKilLID lastID;
 
         public:
-            StringPool(streams::FileInputStream *in, AbstractStringKeeper* keeper);
+            StringPool(streams::FileInputStream *in, AbstractStringKeeper *keeper);
 
             virtual ~StringPool();
 
@@ -123,7 +125,7 @@ namespace skill {
 
             virtual api::Box read(streams::MappedInStream &in) const {
                 api::Box r;
-                r.string = get(in.v64());
+                r.string = get((SKilLID) in.v64());
                 return r;
             }
 

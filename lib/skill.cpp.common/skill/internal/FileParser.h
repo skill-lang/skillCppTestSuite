@@ -112,7 +112,8 @@ namespace skill {
                 AbstractStoragePool *newPool(TypeID typeID,
                                              String name,
                                              AbstractStoragePool *superPool,
-                                             std::set<TypeRestriction *> *restrictions),
+                                             std::set<TypeRestriction *> *restrictions,
+                                             const AbstractStringKeeper *const keeper),
 
                 //! create a new state in the target type system
                 SkillFile *makeState(FileInputStream *in,
@@ -262,7 +263,7 @@ namespace skill {
 
                             // allocate pool
                             AbstractStoragePool *r = newPool(
-                                    (TypeID) types->size() + 32, name, superPool, rest);
+                                    (TypeID) types->size() + 32, name, superPool, rest, String->keeper);
 
                             types->push_back(std::unique_ptr<AbstractStoragePool>(r));
                             defIter = typesByName->insert(

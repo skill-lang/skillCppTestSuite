@@ -24,7 +24,6 @@ namespace skill {
                     delete[] (1 + this->data);
             }
 
-        public:
             BasePool(TypeID typeID, const api::string_t *name, std::set<TypeRestriction *> *restrictions)
                     : StoragePool<T, T>(typeID, nullptr, name, restrictions) { }
         };
