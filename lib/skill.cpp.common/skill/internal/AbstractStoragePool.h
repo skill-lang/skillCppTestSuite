@@ -162,6 +162,28 @@ namespace skill {
             //! internal use only
             SKilLID staticDataInstances = 0;
 
+            /**
+             * the size of this pool including new object, but excluding subpools
+             */
+            SKilLID staticSize() {
+                return staticDataInstances + newObjectsSize();
+            }
+
+            /**
+             * the size of this pool, including subpools and new objects
+             */
+            SKilLID size() {
+                if (fixed)
+                    return cachedSize;
+                else {
+                    auto r = staticSize();
+                    for (auto sub : subPools)
+                        r += sub->size();
+
+                    return r;
+                }
+            }
+
             //! internal use only
             std::vector<Block> blocks;
 

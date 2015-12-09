@@ -13,7 +13,7 @@ using namespace internal;
 SkillFile::SkillFile(streams::FileInputStream *in, WriteMode mode, StringPool *stringPool,
                      std::vector<std::unique_ptr<AbstractStoragePool>> *types, typeByName_t *typesByName,
                      fieldTypes::AnnotationType *const annotation)
-        : strings(stringPool), annotation(annotation), types(types),
+        : strings(stringPool), annotation(annotation->init()), types(types),
           typesByName(typesByName), fromFile(in) {
 
 }

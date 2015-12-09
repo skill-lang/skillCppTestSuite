@@ -44,10 +44,20 @@ namespace skill {
              */
             AnnotationType *init() {
                 for (const auto &t : *types) {
-                    t->name->c_str();
+                    typesByName[t->name->c_str()] = t.get();
                 }
                 return this;
             }
+
+            /**
+             * map a type name to a pool
+             *
+             * @note intended for internal use
+             */
+            internal::AbstractStoragePool *type(const char *name) {
+                return typesByName[name];
+            }
+
 
             virtual api::Box read(streams::MappedInStream &in) const {
                 api::Box r;
