@@ -8,13 +8,13 @@
 #include "../common.h"
 #include "../api/SkillFile.h"
 #include "ParseException.h"
-#include "../fieldTypes/BuiltinFieldType.h"
-#include "../fieldTypes/AnnotationType.h"
 #include "../streams/FileInputStream.h"
 #include "StringPool.h"
 #include "AbstractStoragePool.h"
 #include "../restrictions/FieldRestriction.h"
 #include "../restrictions/TypeRestriction.h"
+#include "../fieldTypes/BuiltinFieldType.h"
+#include "../fieldTypes/AnnotationType.h"
 
 #include <vector>
 #include <unordered_map>
@@ -138,8 +138,7 @@ namespace skill {
             std::unique_ptr<std::vector<std::unique_ptr<AbstractStoragePool>>> types(
                     new std::vector<std::unique_ptr<AbstractStoragePool>>());
             std::unique_ptr<api::typeByName_t> typesByName(new api::typeByName_t);
-            std::unique_ptr<AnnotationType> Annotation(
-                    new AnnotationType(types.get(), typesByName.get(), String.get()));
+            std::unique_ptr<AnnotationType> Annotation(new AnnotationType(types.get()));
             std::vector<std::unique_ptr<MappedInStream>> dataList;
 
             // process stream

@@ -73,8 +73,18 @@ namespace skill {
 
             virtual ~StringPool();
 
-
+            /**
+             * add a string to the pool
+             */
             virtual String add(const char *target);
+
+            /**
+             * add a literal string to the pool. This has the fancy guarantee, that
+             * result->c_str() == target.
+             *
+             * @note this wont work, if the string is already known!
+             */
+            virtual String addLiteral(const char *target);
 
             inline void addPosition(std::pair<long, int> position) {
                 idMap.push_back(nullptr);

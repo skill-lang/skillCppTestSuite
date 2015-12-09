@@ -47,6 +47,12 @@ namespace skill {
 
             const size_t hash;
 
+            /**
+             * this is the source literal, iff the string was constructed from a literal.
+             * otherwise it is the result of std::string::c_str()
+             */
+            const char *const source;
+
             inline size_t mkHash(const std::string &c) {
                 std::hash<std::string> hash;
                 return hash(c);
@@ -65,20 +71,33 @@ namespace skill {
              * intended.
              */
             string_t(const string_t &c)
-                    : std::string(c), id(c.id), hash(mkHash(c)) { }
+                    : std::string(c), id(c.id), hash(mkHash(c)), source(std::string::c_str()) { }
+
+            /**
+             * internal construction for literal strings only;
+             */
+            string_t(const char *c)
+                    : std::string(c), id(-1), hash(mkHash(*this)), source(c) { }
 
             /**
              * internal construction only;
              */
             string_t(const char *c, SKilLID id)
-                    : std::string(c), id(id), hash(mkHash(*this)) { }
+                    : std::string(c), id(id), hash(mkHash(*this)), source(std::string::c_str()) { }
 
             string_t(const char *c, int length, SKilLID id)
-                    : std::string(c, length), id(id), hash(mkHash(*this)) { }
+                    : std::string(c, length), id(id), hash(mkHash(*this)), source(std::string::c_str()) { }
 
         public:
             SKilLID getID() const {
                 return id;
+            }
+
+            /**
+             * override c_str by something that is constant, if the string was constructed from a literal
+             */
+            const char* c_str() const {
+                return source;
             }
         };
 

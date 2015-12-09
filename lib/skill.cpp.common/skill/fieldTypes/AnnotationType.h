@@ -25,16 +25,29 @@ namespace skill {
          */
         class AnnotationType : public BuiltinFieldType<api::Object *, 5> {
             std::vector<std::unique_ptr<internal::AbstractStoragePool>> *const types;
-            api::typeByName_t *const typesByName;
-            internal::StringPool *const string;
+            /**
+             * annotations will not be queried from outside, thus we can directly use char* obtained from
+             * skill string pointers
+             */
+            mutable std::unordered_map<const char *, internal::AbstractStoragePool *> typesByName;
 
         public:
-            AnnotationType(std::vector<std::unique_ptr<internal::AbstractStoragePool>> *types,
-                           api::typeByName_t *typesByName,
-                           internal::StringPool *string)
-                    : types(types), typesByName(typesByName), string(string) { }
+            AnnotationType(std::vector<std::unique_ptr<internal::AbstractStoragePool>> *types)
+                    : types(types), typesByName() { }
 
             virtual ~AnnotationType() { }
+
+            /**
+             * initialize the annotation type, i.e. establishing the typesByName mapping
+             *
+             * @return this, so that init can be used in a constructor
+             */
+            AnnotationType *init() {
+                for (const auto &t : *types) {
+                    t->name->c_str();
+                }
+                return this;
+            }
 
             virtual api::Box read(streams::MappedInStream &in) const {
                 api::Box r;
@@ -47,8 +60,7 @@ namespace skill {
 
             virtual uint64_t offset(const api::Box &target) const {
                 if (target.annotation) {
-                    String s = string->add(target.annotation->skillName());
-                    return V64FieldType::offset(typesByName->at(s)->typeID)
+                    return V64FieldType::offset(typesByName[target.annotation->skillName()]->typeID)
                            + V64FieldType::offset(target.annotation->id);
                 } else
                     return 2;
@@ -62,7 +74,6 @@ namespace skill {
                 return false;
             }
         };
-
     }
 }
 #endif //SKILL_CPP_COMMON_ANNOTATIONTYPE_H
