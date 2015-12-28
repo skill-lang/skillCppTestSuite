@@ -6,6 +6,7 @@
 #define SKILL_CPP_COMMON_ABSTRACTSTORAGEPOOL_H
 
 #include <vector>
+#include <assert.h>
 
 #include "../common.h"
 #include "FileStructure.h"
@@ -119,6 +120,34 @@ namespace skill {
             std::vector<AbstractStoragePool *> subPools;
 
             /**
+             * a pointer to the next pool in a type order traversal
+             *
+             * @note in fact StoragePool[_ <: B, B]
+             */
+            AbstractStoragePool *nextPool;
+
+            //! calculate next references
+            static void setNextPools(AbstractStoragePool *base) {
+                assert(nullptr == base->superPool);
+                base->setNextPool(nullptr);
+            }
+
+        private:
+            //! initialize the next pointer
+            void setNextPool(AbstractStoragePool *nx) {
+                if (subPools.size()) {
+                    nextPool = subPools[0];
+                    for (size_t i = 0; i < subPools.size() - 1; i++)
+                        subPools[i]->setNextPool(subPools[i + 1]);
+
+                    subPools[subPools.size() - 1]->setNextPool(nx);
+                } else
+                    nextPool = nx;
+            }
+
+        public:
+
+            /**
              * create an anonymous subtype
              */
             virtual AbstractStoragePool *makeSubPool(skill::TypeID typeID,
@@ -196,7 +225,7 @@ namespace skill {
 
             virtual api::Box read(streams::MappedInStream &in) const {
                 api::Box r;
-                r.annotation = getAsAnnotation(in.v64());
+                r.annotation = getAsAnnotation((SKilLID) in.v64());
                 return r;
             }
 

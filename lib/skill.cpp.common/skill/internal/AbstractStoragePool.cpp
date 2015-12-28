@@ -3,10 +3,9 @@
 //
 
 #include "AbstractStoragePool.h"
-#include "../restrictions/TypeRestriction.h"
 #include "UnknownObject.h"
-#include "Book.h"
 #include "StoragePool.h"
+#include "../iterators/TypeHierarchyIterator.h"
 
 using namespace skill;
 using namespace internal;

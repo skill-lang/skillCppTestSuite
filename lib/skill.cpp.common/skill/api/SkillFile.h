@@ -37,14 +37,17 @@ namespace skill {
          * spec independent public API for skill files
          */
         class SkillFile {
-        protected:
+        public:
             api::StringAccess *const strings;
+        protected:
             fieldTypes::AnnotationType *const annotation;
 
             /**
-             * types managed by this file
+             * types managed by this file.
+             *
+             * heap allocated array of pools
              */
-            const std::vector<std::unique_ptr<internal::AbstractStoragePool>> *const types;
+            internal::AbstractStoragePool *const *const types;
 
             /**
              * typename -> type mapping
@@ -58,9 +61,12 @@ namespace skill {
              */
             streams::FileInputStream *const fromFile;
 
-            SkillFile(streams::FileInputStream *in, WriteMode mode, internal::StringPool *stringPool,
-                      std::vector<std::unique_ptr<internal::AbstractStoragePool>> *types, typeByName_t *typesByName,
-                      fieldTypes::AnnotationType *annotation);
+            SkillFile(streams::FileInputStream *in,
+                      WriteMode mode,
+                      internal::StringPool *stringPool,
+                      fieldTypes::AnnotationType *annotation,
+                      std::vector<std::unique_ptr<internal::AbstractStoragePool>> *types,
+                      typeByName_t *typesByName);
 
         public:
             /**
@@ -113,6 +119,27 @@ namespace skill {
              * Same as flush, but will also sync and close file, thus the state must not be used afterwards.
              */
             void close() { };
+
+            /**
+             * start iteration over types in the state
+             */
+            internal::AbstractStoragePool *const *begin() const {
+                return types;
+            }
+
+            /**
+             * end iteration over types in the state
+             */
+            internal::AbstractStoragePool *const *end() const {
+                return types + size();
+            }
+
+            /**
+             * number of types in the file
+             */
+            size_t size() const {
+                return typesByName->size();
+            }
         };
     }
 }

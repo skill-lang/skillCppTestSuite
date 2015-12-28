@@ -40,13 +40,14 @@ namespace skill {
             /**
              * initialize the annotation type, i.e. establishing the typesByName mapping
              *
-             * @return this, so that init can be used in a constructor
+             * @return the type by name mapping is returned, so that the make state code can use and update it to get
+             * faster access to types by name
              */
-            AnnotationType *init() {
+            std::unordered_map<const char *, internal::AbstractStoragePool *>& init() {
                 for (const auto &t : *types) {
                     typesByName[t->name->c_str()] = t.get();
                 }
-                return this;
+                return this->typesByName;
             }
 
             /**
