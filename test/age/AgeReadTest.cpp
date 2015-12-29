@@ -4,6 +4,7 @@
 
 
 #include <gtest/gtest.h>
+#include <skill/internal/UnknownObject.h>
 #include "../../src/age/File.h"
 #include "../../src/age/StringKeeper.h"
 
@@ -29,6 +30,37 @@ TEST(AgeReadTest, ReadAgeCheckTypes) {
         ASSERT_EQ(((age::StringKeeper *) ((skill::internal::StringPool *) sf->strings)->keeper)->age,
                   t->name);
     }
+}
+
+TEST(AgeReadTest, ReadAgeCheckInstanceOrder) {
+    auto sf = std::unique_ptr<SkillFile>(
+            SkillFile::open("../../src/test/resources/genbinary/[[empty]]/accept/ageUnrestricted.sf"));
+    ASSERT_EQ(1, sf->size());
+    auto as = sf->Age->allInTypeOrder();
+    for (size_t i = 1; i <= sf->Age->size(); i++) {
+        ASSERT_EQ(as.next()->skillID(), i);
+    }
+}
+
+TEST(AgeReadTest, ReadLBPOCheckInstanceAllocation) {
+    typedef ::skill::internal::StoragePool<skill::internal::UnknownObject, skill::internal::UnknownObject> *uPool;
+
+    auto sf = std::unique_ptr<SkillFile>(
+            SkillFile::open("../../src/test/resources/genbinary/[[empty]]/accept/localBasePoolOffset.sf"));
+    ASSERT_EQ(5, sf->size());
+    bool foundA = false;
+    for (auto t : *sf) {
+        if (*t->name == std::string("a")) {
+            foundA = true;
+            uPool pool = (uPool) t;
+            auto as = pool->allInTypeOrder();
+            while (as.hasNext()) {
+                auto a = as.next();
+                std::cout << a << (void*)a << std::endl;
+            }
+        }
+    }
+    ASSERT_TRUE(foundA);
 }
 
 TEST(AgeReadTest, ReadDate) {
