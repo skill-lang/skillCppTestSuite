@@ -39,6 +39,10 @@ namespace skill {
                     : Object(id), owner(owner) { }
 
             virtual const char *skillName() const;
+
+            virtual void prettyString(std::ostream &os) const {
+                os << skillName() << "#" << id << "(unknown)";
+            }
         };
     }
 }

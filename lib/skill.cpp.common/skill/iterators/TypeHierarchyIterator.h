@@ -15,13 +15,13 @@ namespace skill {
          * iterates efficiently over the type hierarchy
          */
         class TypeHierarchyIterator :
-                public std::iterator<std::input_iterator_tag, AbstractStoragePool> {
+                public std::iterator<std::input_iterator_tag, const AbstractStoragePool> {
 
-            AbstractStoragePool *current;
-            AbstractStoragePool *const endParent;
+            const AbstractStoragePool *current;
+            const AbstractStoragePool *const endParent;
 
         public:
-            TypeHierarchyIterator(AbstractStoragePool *first)
+            TypeHierarchyIterator(const AbstractStoragePool *first)
                     : current(first), endParent(first->superPool) { }
 
             TypeHierarchyIterator(const TypeHierarchyIterator &iter)
@@ -43,14 +43,14 @@ namespace skill {
             }
 
             //! move to next position and return current element
-            AbstractStoragePool &next() {
+            const AbstractStoragePool *next() {
                 auto p = current;
                 const auto n = current->nextPool;
                 if (n && endParent != n->superPool)
                     current = n;
                 else
                     current = nullptr;
-                return *p;
+                return p;
             }
 
             //! @return true, iff another element can be returned
@@ -66,9 +66,9 @@ namespace skill {
                 return current != rhs.current || endParent != rhs.endParent;
             }
 
-            AbstractStoragePool &operator*() { return *current; }
+            const AbstractStoragePool &operator*() { return *current; }
 
-            AbstractStoragePool &operator->() { return *current; }
+            const AbstractStoragePool &operator->() { return *current; }
         };
     }
 }

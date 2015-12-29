@@ -47,9 +47,25 @@ namespace skill {
 
             //! TODO virtual get(f)
             //! TODO virtual set(f, v)
-            //! TODO ostream& operator<< (ostream& os, const string& str); + virtual prettyString
+
+            /**
+             * inserts a human readable presentation of the object into the argument ostream
+             *
+             * @note constant time operation, i.e. referenced objects are not pretty themselves
+             */
+            virtual void prettyString(std::ostream &os) const = 0;
         };
     }
+}
+
+inline std::ostream &operator<<(std::ostream &os, const skill::api::Object &obj) {
+    obj.prettyString(os);
+    return os;
+}
+
+inline std::ostream &operator<<(std::ostream &os, const skill::api::Object *obj) {
+    obj->prettyString(os);
+    return os;
 }
 
 
