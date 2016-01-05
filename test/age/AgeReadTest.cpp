@@ -49,18 +49,20 @@ TEST(AgeReadTest, ReadLBPOCheckInstanceAllocation) {
             SkillFile::open("../../src/test/resources/genbinary/[[empty]]/accept/localBasePoolOffset.sf"));
     ASSERT_EQ(5, sf->size());
     bool foundA = false;
+    const char *types = "aaabbbbbdddcc";
     for (auto t : *sf) {
         if (*t->name == std::string("a")) {
             foundA = true;
             uPool pool = (uPool) t;
             auto as = pool->allInTypeOrder();
             while (as.hasNext()) {
-                auto a = as.next();
-                std::cout << a << (void*)a << std::endl;
+                ASSERT_EQ(*types, as.next()->skillName()[0]);
+                types++;
             }
         }
     }
-    ASSERT_TRUE(foundA);
+    ASSERT_TRUE(foundA); // saw an a
+    ASSERT_EQ(0, *types); // at end of string
 }
 
 TEST(AgeReadTest, ReadDate) {
