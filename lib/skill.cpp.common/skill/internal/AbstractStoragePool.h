@@ -115,6 +115,11 @@ namespace skill {
             AbstractStoragePool *const basePool;
 
             /**
+             * distance to the base type
+             */
+            const int typeHierarchyHeight;
+
+            /**
              * in fact Pool[? <: T,B]
              */
             std::vector<AbstractStoragePool *> subPools;

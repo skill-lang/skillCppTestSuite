@@ -32,6 +32,9 @@ namespace skill {
             StaticDataIterator<T, B> is;
 
         public:
+            //! creates an empty iterator
+            TypeOrderIterator() : ts(), is() { }
+
             TypeOrderIterator(const StoragePool<T, B> *p)
                     : ts(p), is(p) {
                 while (ts.hasNext()) {
@@ -47,6 +50,7 @@ namespace skill {
                     : ts(iter.ts), is(iter.is) { }
 
             TypeOrderIterator &operator++() {
+                is.next();
                 if (!is.hasNext()) {
                     while (ts.hasNext()) {
                         auto t = (StoragePool<T, B> *) ts.next();
@@ -86,16 +90,26 @@ namespace skill {
             }
 
             bool operator==(const TypeOrderIterator &iter) const {
-                return ts == iter.ts && is == iter.is;
+                return !hasNext() && !iter.hasNext();
             }
 
-            bool operator!=(const TypeOrderIterator &rhs) const {
-                return !(this->operator==(rhs));
+            bool operator!=(const TypeOrderIterator &iter) const {
+                return hasNext() || iter.hasNext();
             }
 
             T &operator*() const { return *is; }
 
             T &operator->() const { return *is; }
+
+            //!iterators themselves can be used in generalized for loops
+            //!@note this will not consume the iterator
+            TypeOrderIterator<T, B> begin() const {
+                return *this;
+            }
+
+            TypeOrderIterator<T, B> end() const {
+                return TypeOrderIterator<T, B>();
+            }
         };
     }
 }

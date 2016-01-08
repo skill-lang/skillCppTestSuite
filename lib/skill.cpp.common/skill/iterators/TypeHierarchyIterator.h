@@ -11,6 +11,7 @@ namespace skill {
     using internal::AbstractStoragePool;
 
     namespace iterators {
+
         /**
          * iterates efficiently over the type hierarchy
          */
@@ -18,18 +19,23 @@ namespace skill {
                 public std::iterator<std::input_iterator_tag, const AbstractStoragePool> {
 
             const AbstractStoragePool *current;
-            const AbstractStoragePool *const endParent;
+            const int endHeight;
+
 
         public:
+            //! creates an empty iterator
+            TypeHierarchyIterator()
+                    : current(nullptr), endHeight(0) { }
+
             TypeHierarchyIterator(const AbstractStoragePool *first)
-                    : current(first), endParent(first->superPool) { }
+                    : current(first), endHeight(first->typeHierarchyHeight) { }
 
             TypeHierarchyIterator(const TypeHierarchyIterator &iter)
-                    : current(iter.current), endParent(iter.endParent) { }
+                    : current(iter.current), endHeight(iter.endHeight) { }
 
             TypeHierarchyIterator &operator++() {
                 const auto n = current->nextPool;
-                if (n && endParent != n->superPool)
+                if (n && endHeight < n->typeHierarchyHeight)
                     current = n;
                 else
                     current = nullptr;
@@ -46,7 +52,7 @@ namespace skill {
             const AbstractStoragePool *next() {
                 auto p = current;
                 const auto n = current->nextPool;
-                if (n && endParent != n->superPool)
+                if (n && endHeight < n->typeHierarchyHeight)
                     current = n;
                 else
                     current = nullptr;
@@ -54,21 +60,33 @@ namespace skill {
             }
 
             //! @return true, iff another element can be returned
-            bool hasNext() {
+            bool hasNext() const {
                 return current;
             }
 
-            bool operator==(const TypeHierarchyIterator &rhs) {
-                return current == rhs.current && endParent == rhs.endParent;
+            //! @note all empty iterators are considered equal
+            bool operator==(const TypeHierarchyIterator &rhs) const {
+                return (!current && !rhs.current) || (current == rhs.current && endHeight == rhs.endHeight);
             }
 
-            bool operator!=(const TypeHierarchyIterator &rhs) {
-                return current != rhs.current || endParent != rhs.endParent;
+            //! @note all empty iterators are considered equal
+            bool operator!=(const TypeHierarchyIterator &rhs) const {
+                return (current || rhs.current) && (current != rhs.current || endHeight != rhs.endHeight);
             }
 
-            const AbstractStoragePool &operator*() { return *current; }
+            const AbstractStoragePool &operator*() const { return *current; }
 
-            const AbstractStoragePool &operator->() { return *current; }
+            const AbstractStoragePool &operator->() const { return *current; }
+
+            //!iterators themselves can be used in generalized for loops
+            //!@note this will not consume the iterator
+            TypeHierarchyIterator begin() const {
+                return *this;
+            }
+
+            TypeHierarchyIterator end() const {
+                return TypeHierarchyIterator();
+            }
         };
     }
 }

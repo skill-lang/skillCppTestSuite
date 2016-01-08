@@ -17,7 +17,8 @@ skill::internal::AbstractStoragePool::AbstractStoragePool(TypeID typeID, Abstrac
         : FieldType(typeID), restrictions(restrictions),
           name(name),
           superPool(superPool),
-          basePool(superPool ? superPool->basePool : this) {
+          basePool(superPool ? superPool->basePool : this),
+          typeHierarchyHeight(superPool ? superPool->typeHierarchyHeight + 1 : 0) {
     if (superPool)
         superPool->subPools.push_back(this);
 }

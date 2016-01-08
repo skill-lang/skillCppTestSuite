@@ -28,45 +28,57 @@ namespace skill {
             //! target pool
             const StoragePool<T, B> *const p;
 
-            SKilLID secondIndex = 0;
-            const SKilLID lastBlock = p.blocks.size;
-            SKilLID index = 0;
-            SKilLID end = 0;
+            SKilLID secondIndex;
+            const SKilLID lastBlock;
+            SKilLID index;
+            SKilLID last;
 
         public:
-            StaticDataIterator(const StoragePool<T, B> *p)
-                    : p(p), secondIndex(0), lastBlock(p->blocks.size()), index(0), end(0) {
+            //! creates an empty iterator
+            StaticDataIterator()
+                    : p(nullptr), secondIndex(0), lastBlock(0),
+                      index(0), last(0) { }
 
-                while (index == end && secondIndex < lastBlock) {
+            StaticDataIterator(const StoragePool<T, B> *p)
+                    : p(p), secondIndex(0), lastBlock(p->blocks.size()), index(0), last(0) {
+
+                while (index == last && secondIndex < lastBlock) {
                     const auto &b = p->blocks[secondIndex];
                     index = b.bpo;
-                    end = index + b.staticCount;
+                    last = index + b.staticCount;
                     secondIndex++;
                 }
                 // mode switch, if there is no other block
-                if (index == end)
-                    secondIndex = 0;
+                if (index == last && secondIndex == lastBlock) {
+                    secondIndex++;
+                    index = 0;
+                    last = p->newObjectsSize();
+                }
             }
 
             StaticDataIterator(const StaticDataIterator &iter)
                     : p(iter.p), secondIndex(iter.secondIndex), lastBlock(iter.lastBlock),
-                      index(iter.index), end(iter.end) { }
+                      index(iter.index), last(iter.last) { }
 
             StaticDataIterator &operator++() {
-                if (index < end) {
-                    // @note increment happens before access, because we shifted data by 1
+                if (secondIndex <= lastBlock) {
                     index++;
-                    while (index == end && secondIndex < lastBlock) {
-                        const auto &b = p->blocks[secondIndex];
-                        index = b.bpo;
-                        end = index + b.staticCount;
-                        secondIndex++;
+                    if (index == last) {
+                        while (index == last && secondIndex < lastBlock) {
+                            const auto &b = p->blocks[secondIndex];
+                            index = b.bpo;
+                            last = index + b.staticCount;
+                            secondIndex++;
+                        }
+                        // mode switch, if there is no other block
+                        if (index == last && secondIndex == lastBlock) {
+                            secondIndex++;
+                            index = 0;
+                            last = p->newObjectsSize();
+                        }
                     }
-                    // mode switch, if there is no other block
-                    if (index == end)
-                        secondIndex = 0;
                 } else {
-                    secondIndex++;
+                    index++;
                 }
                 return *this;
             }
@@ -79,51 +91,74 @@ namespace skill {
 
             //! move to next position and return current element
             T *next() {
-                if (index < end) {
+                if (secondIndex <= lastBlock) {
                     // @note increment happens before access, because we shifted data by 1
                     index++;
                     T *r = p->data[index];
-                    while (index == end && secondIndex < lastBlock) {
-                        const auto &b = p->blocks[secondIndex];
-                        index = b.bpo;
-                        end = index + b.staticCount;
-                        secondIndex++;
+                    if (index == last) {
+                        while (index == last && secondIndex < lastBlock) {
+                            const auto &b = p->blocks[secondIndex];
+                            index = b.bpo;
+                            last = index + b.staticCount;
+                            secondIndex++;
+                        }
+                        // mode switch, if there is no other block
+                        if (index == last && secondIndex == lastBlock) {
+                            secondIndex++;
+                            index = 0;
+                            last = p->newObjectsSize();
+                        }
                     }
-                    // mode switch, if there is no other block
-                    if (index == end)
-                        secondIndex = 0;
                     return r;
                 } else {
-                    T *r = p->newObjects[secondIndex];
-                    secondIndex++;
+                    T *r = p->newObjects[index];
+                    index++;
                     return r;
                 }
             }
 
             //! @return true, iff another element can be returned
             bool hasNext() const {
-                return index < end || secondIndex < p->newObjects.size();
+                return index != last;
             }
 
-            bool operator==(const StaticDataIterator &iter) const {
-                return p == iter.p &&
-                       secondIndex == iter.secondIndex &&
-                       lastBlock == iter.lastBlock &&
-                       index == iter.index &&
-                       end == iter.end;
+            //! @note all empty iterators are considered equal
+            bool operator==(const StaticDataIterator<T, B> &iter) const {
+                return (!hasNext() && !iter.hasNext())
+                       || (p == iter.p &&
+                           secondIndex == iter.secondIndex &&
+                           lastBlock == iter.lastBlock &&
+                           index == iter.index &&
+                           last == iter.last);
             }
 
-            bool operator!=(const StaticDataIterator &rhs) const {
-                return !(this->operator==(rhs));
+            //! @note all empty iterators are considered equal
+            bool operator!=(const StaticDataIterator<T, B> &iter) const {
+                return (hasNext() || iter.hasNext())
+                       && !(p == iter.p &&
+                            secondIndex == iter.secondIndex &&
+                            lastBlock == iter.lastBlock &&
+                            index == iter.index &&
+                            last == iter.last);
             }
 
             T &operator*() const {
                 // @note increment happens before access, because we shifted data by 1
-                return *(index < end ? p->data[index + 1] : p->newObjects[secondIndex]);
+                return *(secondIndex <= lastBlock ? p->data[index + 1] : p->newObjects[index]);
             }
 
             T &operator->() const {
-                return *(index < end ? p->data[index + 1] : p->newObjects[secondIndex]);
+                return *(secondIndex <= lastBlock ? p->data[index + 1] : p->newObjects[index]);
+            }
+
+            //!iterators themselves can be used in generalized for loops
+            //!@note this will not consume the iterator
+            StaticDataIterator <T, B> begin() const {
+                return *this;
+            }
+
+            StaticDataIterator <T, B> end() const {
+                return StaticDataIterator<T, B>();
             }
         };
     }
