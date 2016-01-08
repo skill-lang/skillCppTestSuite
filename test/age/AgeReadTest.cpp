@@ -7,6 +7,7 @@
 #include <skill/internal/UnknownObject.h>
 #include "../../src/age/File.h"
 #include "../../src/age/StringKeeper.h"
+#include "../../src/age/Types.h"
 
 using ::age::api::SkillFile;
 
@@ -20,6 +21,17 @@ TEST(AgeReadTest, ReadAge) {
     ASSERT_EQ(nullptr, sf->Age->get(0));
     ASSERT_EQ(1, sf->Age->get(1)->getAge());
     ASSERT_EQ(23, sf->Age->get(2)->getAge());
+}
+
+TEST(AgeReadTest, ReadAgeForachAPI) {
+    auto sf = std::unique_ptr<SkillFile>(
+            SkillFile::open("../../src/test/resources/genbinary/[[empty]]/accept/ageUnrestricted.sf"));
+    ASSERT_EQ(2, sf->Age->size());
+    const char *as = "\x01\x16";
+    for (auto &age : *sf->Age) {
+        ASSERT_EQ(*as++, age.getAge()) << "found wrong age";
+    }
+    ASSERT_EQ(0, *as) << "less or more as then expected";
 }
 
 TEST(AgeReadTest, ReadAgeCheckTypes) {
@@ -37,32 +49,113 @@ TEST(AgeReadTest, ReadAgeCheckInstanceOrder) {
             SkillFile::open("../../src/test/resources/genbinary/[[empty]]/accept/ageUnrestricted.sf"));
     ASSERT_EQ(1, sf->size());
     auto as = sf->Age->allInTypeOrder();
-    for (size_t i = 1; i <= sf->Age->size(); i++) {
+    for (skill::SKilLID i = 1; i <= sf->Age->size(); i++) {
         ASSERT_EQ(as.next()->skillID(), i);
     }
 }
 
-TEST(AgeReadTest, ReadLBPOCheckInstanceAllocation) {
-    typedef ::skill::internal::StoragePool<skill::internal::UnknownObject, skill::internal::UnknownObject> *uPool;
+TEST(AgeReadTest, CheckLBPOTypeHierarchyOrder) {
+
+    auto checkType = [](skill::internal::AbstractStoragePool *t, const char *name,
+                        const char *types) -> void {
+        if (*t->name == std::string(name)) {
+            skill::iterators::TypeHierarchyIterator ts(t);
+            for (auto &p : ts)
+                ASSERT_EQ(*types++, p.name->at(0))
+                                            << name << " contained wrong instances";
+            ASSERT_EQ(0, *types) << name << " is not at end of string";
+        }
+    };
 
     auto sf = std::unique_ptr<SkillFile>(
             SkillFile::open("../../src/test/resources/genbinary/[[empty]]/accept/localBasePoolOffset.sf"));
     ASSERT_EQ(5, sf->size());
-    bool foundA = false;
-    const char *types = "aaabbbbbdddcc";
     for (auto t : *sf) {
-        if (*t->name == std::string("a")) {
-            foundA = true;
-            uPool pool = (uPool) t;
-            auto as = pool->allInTypeOrder();
-            while (as.hasNext()) {
-                ASSERT_EQ(*types, as.next()->skillName()[0]);
-                types++;
-            }
-        }
+        checkType(t, "a", "abdc");
+        checkType(t, "b", "bd");
+        checkType(t, "c", "c");
+        checkType(t, "d", "d");
     }
-    ASSERT_TRUE(foundA); // saw an a
-    ASSERT_EQ(0, *types); // at end of string
+}
+
+TEST(AgeReadTest, ReadLBPOCheckTypeOrder) {
+    typedef ::skill::internal::StoragePool<skill::internal::UnknownObject, skill::internal::UnknownObject> *uPool;
+
+    auto checkType = [](skill::internal::AbstractStoragePool *t, const char *name,
+                        const char *types) -> void {
+        if (*t->name == std::string(name)) {
+            uPool pool = (uPool) t;
+            const auto& is = pool->allInTypeOrder();
+            for (auto &i : is)
+                ASSERT_EQ(*types++, i.skillName()[0])
+                                            << name << " contained wrong instances";
+
+            ASSERT_EQ(0, *types) << name << " is not at end of string";
+        }
+    };
+
+    auto sf = std::unique_ptr<SkillFile>(
+            SkillFile::open("../../src/test/resources/genbinary/[[empty]]/accept/localBasePoolOffset.sf"));
+    ASSERT_EQ(5, sf->size());
+    for (auto t : *sf) {
+        checkType(t, "a", "aaabbbbbdddcc");
+        checkType(t, "b", "bbbbbddd");
+        checkType(t, "c", "cc");
+        checkType(t, "d", "ddd");
+    }
+}
+
+TEST(AgeReadTest, ReadLBPOCheckStaticInstances) {
+    typedef ::skill::internal::StoragePool<skill::internal::UnknownObject, skill::internal::UnknownObject> *uPool;
+
+    auto checkType = [](skill::internal::AbstractStoragePool *t, const char *name,
+                        const char *types) -> void {
+        if (*t->name == std::string(name)) {
+            uPool pool = (uPool) t;
+            for (auto &i : pool->staticInstances())
+                ASSERT_EQ(*types++, ((age::Age &) i).skillID())
+                                            << name << " contained wrong instances";
+
+            ASSERT_EQ(0, *types) << name << " is not at end of string";
+        }
+    };
+
+    auto sf = std::unique_ptr<SkillFile>(
+            SkillFile::open("../../src/test/resources/genbinary/[[empty]]/accept/localBasePoolOffset.sf"));
+    ASSERT_EQ(5, sf->size());
+    for (auto t : *sf) {
+        checkType(t, "a", "\x01\x02\x0B");
+        checkType(t, "b", "\x03\x04\x05\x07\x08");
+        checkType(t, "c", "\x06\x0D");
+        checkType(t, "d", "\x09\x0A\x0C");
+    }
+}
+
+TEST(AgeReadTest, ReadLBPOCheckAllocationOrder) {
+    typedef ::skill::internal::StoragePool<skill::internal::UnknownObject, skill::internal::UnknownObject> *uPool;
+
+    auto checkType = [](skill::internal::AbstractStoragePool *t, const char *name,
+                        const char *types) -> void {
+        if (*t->name == std::string(name)) {
+            uPool pool = (uPool) t;
+            for (auto &i : pool->all())
+                ASSERT_EQ(*types++, i.skillName()[0])
+                                            << name << " contained wrong instances";
+
+
+            ASSERT_EQ(0, *types) << name << " is not at end of string";
+        }
+    };
+
+    auto sf = std::unique_ptr<SkillFile>(
+            SkillFile::open("../../src/test/resources/genbinary/[[empty]]/accept/localBasePoolOffset.sf"));
+    ASSERT_EQ(5, sf->size());
+    for (auto t : *sf) {
+        checkType(t, "a", "aabbbcbbddadc");
+        checkType(t, "b", "bbbbbddd");
+        checkType(t, "c", "cc");
+        checkType(t, "d", "ddd");
+    }
 }
 
 TEST(AgeReadTest, ReadDate) {
