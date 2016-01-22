@@ -20,14 +20,14 @@ TEST(AgeReadTest, ReadAge) {
     }
     ASSERT_EQ(nullptr, sf->Age->get(0));
     ASSERT_EQ(1, sf->Age->get(1)->getAge());
-    ASSERT_EQ(23, sf->Age->get(2)->getAge());
+    ASSERT_EQ(28, sf->Age->get(2)->getAge());
 }
 
 TEST(AgeReadTest, ReadAgeForachAPI) {
     auto sf = std::unique_ptr<SkillFile>(
             SkillFile::open("../../src/test/resources/genbinary/[[empty]]/accept/ageUnrestricted.sf"));
     ASSERT_EQ(2, sf->Age->size());
-    const char *as = "\x01\x16";
+    const char *as = "\x01\x1c";
     for (auto &age : *sf->Age) {
         ASSERT_EQ(*as++, age.getAge()) << "found wrong age";
     }
