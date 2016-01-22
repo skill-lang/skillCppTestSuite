@@ -35,8 +35,7 @@ String internal::StringPool::add(const char *target) {
 
 String internal::StringPool::addLiteral(const char *target) {
     String result = new string_t(target);
-    auto it = knownStrings.find(result);
-    assert(it == knownStrings.end());
+    assert(knownStrings.find(result) == knownStrings.end());
 
     knownStrings.insert(result);
     return result;
