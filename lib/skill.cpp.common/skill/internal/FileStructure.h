@@ -55,6 +55,9 @@ namespace skill {
             Chunk(long begin, long end, SKilLID count)
                     : begin(begin), end(end), count(count) { }
 
+            //! @return true iff a simple chunk
+            virtual bool isSimple() const = 0;
+
             long begin;
             long end;
             const SKilLID count;
@@ -70,6 +73,8 @@ namespace skill {
             SimpleChunk(long begin, long end, SKilLID count, const SKilLID bpo)
                     : Chunk(begin, end, count), bpo(bpo) { }
 
+            virtual bool isSimple() const { return true; };
+
             const SKilLID bpo;
         };
 
@@ -84,6 +89,8 @@ namespace skill {
         struct BulkChunk : public Chunk {
             BulkChunk(long begin, long end, SKilLID count, const int blockCount)
                     : Chunk(begin, end, count), blockCount(blockCount) { }
+
+            virtual bool isSimple() const { return false; };
 
             const int blockCount;
         };

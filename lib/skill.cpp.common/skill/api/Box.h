@@ -37,6 +37,84 @@ namespace skill {
             Object *annotation;
         };
 
+        inline Box box(const bool x) {
+            Box r;
+            r.boolean = x;
+            return r;
+        }
+
+        inline Box box(const int8_t x) {
+            Box r;
+            r.i8 = x;
+            return r;
+        }
+
+        inline Box box(const int16_t x) {
+            Box r;
+            r.i16 = x;
+            return r;
+        }
+
+        inline Box box(const int32_t x) {
+            Box r;
+            r.i32 = x;
+            return r;
+        }
+
+        inline Box box(const int64_t x) {
+            Box r;
+            r.i64 = x;
+            return r;
+        }
+
+        inline Box box(const float x) {
+            Box r;
+            r.f32 = x;
+            return r;
+        }
+
+        inline Box box(const double x) {
+            Box r;
+            r.f64 = x;
+            return r;
+        }
+
+        inline Box box(const String x) {
+            Box r;
+            r.string = x;
+            return r;
+        }
+
+        inline Box box(Box *const x) {
+            Box r;
+            r.array = x;
+            return r;
+        }
+
+        inline Box box(std::vector<Box> *x) {
+            Box r;
+            r.list = x;
+            return r;
+        }
+
+        inline Box box(std::set<Box> *x) {
+            Box r;
+            r.set = x;
+            return r;
+        }
+
+        inline Box box(std::map<Box, Box> *x) {
+            Box r;
+            r.map = x;
+            return r;
+        }
+
+        inline Box box(Object *x) {
+            Box r;
+            r.annotation = x;
+            return r;
+        }
+
         inline bool operator<(const Box l, const Box r) {
             return l.i64 < r.i64;
         }

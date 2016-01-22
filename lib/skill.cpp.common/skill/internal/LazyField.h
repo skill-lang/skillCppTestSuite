@@ -13,14 +13,17 @@ namespace skill {
         class LazyField : public FieldDeclaration {
 
         public:
-            LazyField(const FieldType *const type, const api::string_t *name)
-                    : FieldDeclaration(type, name) { }
+            LazyField(const FieldType *const type, const api::string_t *name,
+                      AbstractStoragePool *const owner)
+                    : FieldDeclaration(type, name, owner) { }
 
             virtual ~LazyField() { }
 
             virtual api::Box getR(const api::Object *i);
 
             virtual void setR(api::Object *i, api::Box v);
+
+            virtual void read(const streams::MappedInStream *in, const Chunk *target);
         };
     }
 }

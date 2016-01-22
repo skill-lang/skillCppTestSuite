@@ -34,8 +34,8 @@ namespace skill {
                         typeID, this, name, restrictions);
             }
 
-            virtual FieldDeclaration *addField(TypeID id, const FieldType *type,
-                                               api::String name);
+            virtual FieldDeclaration *addField(const AbstractStringKeeper *const keeper,
+                                               TypeID id, const FieldType *type, api::String name);
 
             virtual void allocateInstances() {
                 book = new Book<UnknownObject>(staticDataInstances);

@@ -15,6 +15,7 @@
 #include "../utils.h"
 #include "../restrictions/TypeRestriction.h"
 #include "../fieldTypes/BuiltinFieldType.h"
+#include "StringPool.h"
 
 namespace skill {
     namespace api {
@@ -226,7 +227,8 @@ namespace skill {
             std::vector<FieldDeclaration *> dataFields;
 
             //!internal use only
-            virtual FieldDeclaration *addField(TypeID id, const FieldType *type, api::String name) = 0;
+            virtual FieldDeclaration *addField(const AbstractStringKeeper *const keeper,
+                                               TypeID id, const FieldType *type, api::String name) = 0;
 
             virtual api::Box read(streams::MappedInStream &in) const {
                 api::Box r;

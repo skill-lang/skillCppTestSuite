@@ -15,6 +15,7 @@
 #include "../restrictions/TypeRestriction.h"
 #include "../fieldTypes/BuiltinFieldType.h"
 #include "../fieldTypes/AnnotationType.h"
+#include "ThreadPool.h"
 
 #include <vector>
 #include <unordered_map>
@@ -442,7 +443,7 @@ namespace skill {
                              }*/
                                 endOffset = in->v64();
 
-                                auto f = p->addField(id, t, fieldName/*, rest*/);
+                                auto f = p->addField(String->keeper, id, t, fieldName/*, rest*/);
                                 f->addChunk(
                                         new BulkChunk(dataEnd, endOffset, p->cachedSize, p->blocks.size()));
                             } else {
@@ -473,6 +474,47 @@ namespace skill {
             return makeState(in.release(), mode, String.release(), Annotation.release(), types.release(),
                              typesByName.release(),
                              dataList);
+        }
+
+        /**
+         * has to be called by make state after instances have been allocated to ensure
+         * that required fields are read from file
+         */
+        inline void triggerFieldDeserialization(std::vector<std::unique_ptr<AbstractStoragePool>> *types,
+                                                std::vector<std::unique_ptr<MappedInStream>> &dataList) {
+
+            //val errors = new ConcurrentLinkedQueue[Throwable]
+            //val barrier = new Barrier
+            // stack-local thread pool als alternative zu barrier; thread::yield!
+            for (auto &t : *types) {
+                for (FieldDeclaration *f : t->dataFields) {
+                    int bsIndex = 0;
+
+                    for (Chunk *dc : f->dataChunks) {
+                        if (dynamic_cast<BulkChunk *>(dc)) {
+                            // skip blocks that do not contain data for our field
+                            bsIndex += ((BulkChunk *) dc)->blockCount - 1;
+                        }
+
+                        const int blockIndex = t->blocks[bsIndex++].blockIndex;
+                        if (dc->count) {
+                            //   barrier.begin
+                            MappedInStream *in = dataList[blockIndex].get();
+                            //ThreadPool::global.run([=]() -> void {
+                            //TODO try/catch
+                            f->read(in, dc);
+                            //barrier.end
+                            //    });
+                        }
+                    }
+                }
+            }
+
+            //   barrier.await
+
+            // re-throw first error
+            // if (!errors.isEmpty())
+            //    throw errors.peek();
         }
     }
 }

@@ -14,5 +14,9 @@ api::Box LazyField::getR(const api::Object *i) {
 }
 
 void LazyField::setR(api::Object *i, api::Box v) {
-  //! TODO
+    //! TODO
+}
+
+void LazyField::read(const streams::MappedInStream *in, const Chunk *target) {
+    //! TODO
 }
