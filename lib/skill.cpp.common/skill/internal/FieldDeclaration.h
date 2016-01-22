@@ -27,6 +27,14 @@ namespace skill {
                              AbstractStoragePool *const owner)
                     : AbstractField(type, name), owner(owner) { }
 
+            inline SkillException ParseException(long position, long begin, long end, const std::string &msg) {
+                std::stringstream message;
+                message << "ParseException while parsing field.\n Position" << position
+                << "\n inside " << begin << ", " << end << "\n reason: "
+                << msg << std::endl;
+                return SkillException(message.str());
+            }
+
         public:
             virtual ~FieldDeclaration() { };
 

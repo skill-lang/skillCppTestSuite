@@ -8,6 +8,7 @@
 #define SKILL_CPP_COMMON_FILESTRUCTURE_H
 
 #include "../common.h"
+#include <cstddef>
 
 namespace skill {
     namespace internal {
@@ -42,24 +43,24 @@ namespace skill {
         };
 
 
-/**
- * Chunks contain information on where field data can be found.
- *
- * @author Timm Felden
- * @note indices of recipient of the field data is not necessarily continuous;
- *       make use of staticInstances!
- * @note in contrast to other implementations, the offset is relative, because read will use a buffer over the whole
- * data segment, instead of buffering each segment itself
- */
+        /**
+         * Chunks contain information on where field data can be found.
+         *
+         * @author Timm Felden
+         * @note indices of recipient of the field data is not necessarily continuous;
+         *       make use of staticInstances!
+         * @note in contrast to other implementations, the offset is relative, because read will use a buffer over the whole
+         * data segment, instead of buffering each segment itself
+         */
         struct Chunk {
-            Chunk(long begin, long end, SKilLID count)
+            Chunk(size_t begin, size_t end, SKilLID count)
                     : begin(begin), end(end), count(count) { }
 
             //! @return true iff a simple chunk
             virtual bool isSimple() const = 0;
 
-            long begin;
-            long end;
+            size_t begin;
+            size_t end;
             const SKilLID count;
         };
 
@@ -70,7 +71,7 @@ namespace skill {
  */
         struct SimpleChunk : public Chunk {
 
-            SimpleChunk(long begin, long end, SKilLID count, const SKilLID bpo)
+            SimpleChunk(size_t begin, size_t end, SKilLID count, const SKilLID bpo)
                     : Chunk(begin, end, count), bpo(bpo) { }
 
             virtual bool isSimple() const { return true; };
@@ -87,7 +88,7 @@ namespace skill {
  * @param blockCount the number of blocks that have to be processed
  */
         struct BulkChunk : public Chunk {
-            BulkChunk(long begin, long end, SKilLID count, const int blockCount)
+            BulkChunk(size_t begin, size_t end, SKilLID count, const int blockCount)
                     : Chunk(begin, end, count), blockCount(blockCount) { }
 
             virtual bool isSimple() const { return false; };
