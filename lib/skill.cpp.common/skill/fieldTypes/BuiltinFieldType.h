@@ -330,8 +330,11 @@ namespace skill {
                 api::Box r;
                 size_t length = (size_t) in.v64();
                 r.map = new std::map<api::Box, api::Box>;
-                for (size_t i = 0; i < length; i++)
-                    r.map->at(key->read(in)) = value->read(in);
+                for (size_t i = 0; i < length; i++) {
+                    const auto& k = key->read(in);
+                    const auto& v = value->read(in);
+                    (*r.map)[k] = v;
+                }
                 return r;
             }
 

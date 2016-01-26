@@ -43,7 +43,7 @@ namespace skill {
              * @return the type by name mapping is returned, so that the make state code can use and update it to get
              * faster access to types by name
              */
-            std::unordered_map<const char *, internal::AbstractStoragePool *>& init() {
+            std::unordered_map<const char *, internal::AbstractStoragePool *> &init() {
                 for (const auto &t : *types) {
                     typesByName[t->name->c_str()] = t.get();
                 }
@@ -64,7 +64,7 @@ namespace skill {
                 api::Box r;
                 TypeID t = (TypeID) in.v64();
                 SKilLID id = (SKilLID) in.v64();
-                r.annotation = t ? types->at(t)->getAsAnnotation(id) : nullptr;
+                r.annotation = t ? types->at(t - 1)->getAsAnnotation(id) : nullptr;
 
                 return r;
             }
