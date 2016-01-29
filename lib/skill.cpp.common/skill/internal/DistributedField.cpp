@@ -11,27 +11,30 @@ using namespace internal;
 api::Box DistributedField::getR(const api::Object *i) {
     return (-1 == i->id) ?
            newData[i] :
-           data[i];
+           data[i->id - 1];
 }
 
 void DistributedField::setR(api::Object *i, api::Box v) {
-    ((-1 == i->id) ? newData[i] : data[i]) = v;
+    ((-1 == i->id) ? newData[i] : data[i->id - 1]) = v;
 }
 
 void DistributedField::read(const streams::MappedInStream *part, const Chunk *target) {
+    if (!data.p)
+        new(&data) streams::SparseArray<api::Box>((size_t) owner->basePool->size());
+
     skill::streams::MappedInStream in(part, target->begin, target->end);
 
     try {
         if (target->isSimple()) {
-            for (::skill::SKilLID i = 1 + ((::skill::internal::SimpleChunk *) target)->bpo,
+            for (::skill::SKilLID i = ((::skill::internal::SimpleChunk *) target)->bpo,
                          high = i + target->count; i != high; i++)
-                data[owner->getAsAnnotation(i)] = type->read(in);
+                data[i] = type->read(in);
         } else {
             //case bci : BulkChunk ⇒
             for (int i = 0; i < ((::skill::internal::BulkChunk *) target)->blockCount; i++) {
                 const auto &b = owner->blocks[i];
-                for (::skill::SKilLID i = 1 + b.bpo, end = i + b.dynamicCount; i != end; i++)
-                    data[owner->getAsAnnotation(i)] = type->read(in);
+                for (::skill::SKilLID i = b.bpo, end = i + b.dynamicCount; i != end; i++)
+                    data[i] = type->read(in);
             }
         }
     } catch (::skill::SkillException e) {
@@ -55,11 +58,12 @@ void DistributedField::read(const streams::MappedInStream *part, const Chunk *ta
 
 bool DistributedField::check() const {
     if (checkedRestrictions.size()) {
-        for (const auto &i : data) {
-            for (auto r : checkedRestrictions)
-                if (!r->check(i.second))
-                    return false;
-        }
+        for (const auto &b : owner->blocks)
+            for (auto i = b.bpo; i < b.bpo + b.dynamicCount; i++)
+                for (auto r : checkedRestrictions)
+                    if (!r->check(data[i]))
+                        return false;
+
         for (const auto &i : newData) {
             for (auto r : checkedRestrictions)
                 if (!r->check(i.second))

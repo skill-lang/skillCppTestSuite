@@ -6,6 +6,7 @@
 #define SKILL_CPP_COMMON_DISTRIBUTEDFIELD_H
 
 #include "FieldDeclaration.h"
+#include "../streams/SparseArray.h"
 #include <unordered_map>
 
 namespace skill {
@@ -15,7 +16,7 @@ namespace skill {
         protected:
             // data held as in storage pools
             // @note see paper notes for O(1) implementation
-            std::unordered_map<const api::Object *, api::Box> data; //Array[T]()
+            streams::SparseArray<api::Box> data; //Array[T]()
             std::unordered_map<const api::Object *, api::Box> newData;
 
         public:
