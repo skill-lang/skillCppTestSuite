@@ -357,40 +357,38 @@ namespace skill {
                                                               blockCounter);
 
                                 // parse field restrictions
+                                std::set<const restrictions::FieldRestriction *> rest;
                                 int fieldRestrictionCount = (int) in->v64();
-                                //! TODO
-
-                                //const auto &rest = new HashSet[restrictions.FieldRestriction]
-                                //rest.sizeHint(fieldRestrictionCount)
                                 for (; fieldRestrictionCount != 0; fieldRestrictionCount--) {
                                     const int i = (const int) in->v64();
                                     switch (i) {
                                         case 0: // nonnull
+                                            rest.insert(restrictions::NonNull::get());
                                         case 1: // default
                                             break;
                                         case 3:
                                             //range
                                             switch (t->typeID) {
                                                 case 7:
-                                                    in->i8(), in->i8();
+                                                    rest.insert(new restrictions::Range<int8_t>(in->i8(), in->i8()));
                                                     break;
                                                 case 8:
-                                                    in->i16(), in->i16();
+                                                    rest.insert(new restrictions::Range<int16_t>(in->i16(), in->i16()));
                                                     break;
                                                 case 9:
-                                                    in->i32(), in->i32();
+                                                    rest.insert(new restrictions::Range<int32_t>(in->i32(), in->i32()));
                                                     break;
                                                 case 10:
-                                                    in->i64(), in->i64();
+                                                    rest.insert(new restrictions::Range<int64_t>(in->i64(), in->i64()));
                                                     break;
                                                 case 11:
-                                                    in->v64(), in->v64();
+                                                    rest.insert(new restrictions::Range<int64_t>(in->v64(), in->v64()));
                                                     break;
                                                 case 12:
-                                                    in->f32(), in->f32();
+                                                    rest.insert(new restrictions::Range<float>(in->f32(), in->f32()));
                                                     break;
                                                 case 13:
-                                                    in->f64(), in->f64();
+                                                    rest.insert(new restrictions::Range<double>(in->f64(), in->f64()));
                                                     break;
                                                 default:
                                                     throw ParseException(
@@ -412,38 +410,12 @@ namespace skill {
                                                     "Found an unknown field restriction. Please regenerate your binding, if possible.");
                                     }
                                 }
-                                /* rest += ((in.v64.toInt : @switch) match {
-                                         case 0: restrictions.NonNull.theNonNull
-                                         case 1: restrictions.DefaultRestriction(t.read(in))
-                                         case 3: t match {
-                                             case I8 : restrictions.Range(in.i8, in.i8)
-                                             case I16: restrictions.Range(in.i16, in.i16)
-                                             case I32: restrictions.Range(in.i32, in.i32)
-                                             case I64: restrictions.Range(in.i64, in.i64)
-                                             case V64: restrictions.Range(in.v64, in.v64)
-                                             case F32: restrictions.Range(in.f32, in.f32)
-                                             case F64: restrictions.Range(in.f64, in.f64)
-                                             case t  : throw new ParseException(in, blockCounter, s
-                                             "Type $t can not be range restricted!", null)
-                                         }
-                                         case 5: restrictions.Coding(String.get(in.v64.toInt))
-                                         case 7: restrictions.ConstantLengthPointer
-                                         case 9: restrictions.OneOf((0 until in.v64.toInt).map(i:
-                                         parseFieldType(in, types, String, Annotation, blockCounter) match {
-                                             case t :
-                                                 StoragePool[_, _]: t.getInstanceClass
-                                             case t: throw new ParseException(in, blockCounter,
-                                                                               s
-                                             "Found a one of restrictions that tries to restrict to non user type $t.", null)
-                                         }).toArray
-                                         )
-                                         case i: throw new ParseException(in, blockCounter,
-                                         s"Found unknown field restriction $i. Please regenerate your binding, if possible.", null)
-                                 })
-                             }*/
                                 endOffset = in->v64();
 
-                                auto f = p->addField(String->keeper, id, t, fieldName/*, rest*/);
+                                auto f = p->addField(String->keeper, id, t, fieldName);
+                                for (auto r : rest)
+                                    f->addRestriction(r);
+
                                 f->addChunk(
                                         new BulkChunk(dataEnd, endOffset, p->cachedSize, p->blocks.size()));
                             } else {

@@ -37,20 +37,7 @@ namespace skill {
             virtual FieldDeclaration *addField(const AbstractStringKeeper *const keeper,
                                                TypeID id, const FieldType *type, api::String name);
 
-            virtual void allocateInstances() {
-                book = new Book<UnknownObject>(staticDataInstances);
-                UnknownObject *page = book->firstPage();
-                int idx = 0;
-                for (const auto &b : blocks) {
-                    SKilLID i = b.bpo + 1;
-                    const auto last = i + b.staticCount;
-                    for (; i < last; i++) {
-                        UnknownObject *const p = page + idx++;
-                        data[i] = p;
-                        p->byPassConstruction(i, this);
-                    }
-                }
-            }
+            virtual void allocateInstances();
         };
     }
 }
