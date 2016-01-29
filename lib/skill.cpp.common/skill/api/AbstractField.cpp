@@ -7,6 +7,6 @@
 using namespace skill::api;
 
 AbstractField::~AbstractField() {
-    if (type->requiresDestruction())
+    if (typeRequiresDestruction)
         delete type;
 }

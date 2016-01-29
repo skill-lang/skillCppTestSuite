@@ -24,7 +24,11 @@ namespace skill {
          * will then be unique and we no longer have to care for identical copies
          */
         class AnnotationType : public BuiltinFieldType<api::Object *, 5> {
-            std::vector<std::unique_ptr<internal::AbstractStoragePool>> *const types;
+            /**
+             * @note pools in this vector are owned by annotation, as long as typesByName is empty.
+             * That way, we can omit unique_pointers.
+             */
+            std::vector<internal::AbstractStoragePool *> *const types;
             /**
              * annotations will not be queried from outside, thus we can directly use char* obtained from
              * skill string pointers
@@ -32,10 +36,14 @@ namespace skill {
             mutable std::unordered_map<const char *, internal::AbstractStoragePool *> typesByName;
 
         public:
-            AnnotationType(std::vector<std::unique_ptr<internal::AbstractStoragePool>> *types)
+            AnnotationType(std::vector<internal::AbstractStoragePool *> *types)
                     : types(types), typesByName() { }
 
-            virtual ~AnnotationType() { }
+            virtual ~AnnotationType() {
+                for (auto p : *types)
+                    delete p;
+                delete types;
+            }
 
             /**
              * initialize the annotation type, i.e. establishing the typesByName mapping
@@ -44,8 +52,8 @@ namespace skill {
              * faster access to types by name
              */
             std::unordered_map<const char *, internal::AbstractStoragePool *> &init() {
-                for (const auto &t : *types) {
-                    typesByName[t->name->c_str()] = t.get();
+                for (auto t : *types) {
+                    typesByName[t->name->c_str()] = t;
                 }
                 return this->typesByName;
             }

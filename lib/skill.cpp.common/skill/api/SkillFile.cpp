@@ -12,16 +12,14 @@ using namespace internal;
 
 SkillFile::SkillFile(streams::FileInputStream *in, WriteMode mode, StringPool *stringPool,
                      fieldTypes::AnnotationType *annotation,
-                     std::vector<std::unique_ptr<AbstractStoragePool>> *types, typeByName_t *typesByName)
+                     std::vector<AbstractStoragePool *> *types, typeByName_t *typesByName)
         : strings(stringPool), annotation(annotation), types(new internal::AbstractStoragePool *[types->size()]),
           typesByName(typesByName), fromFile(in) {
     for (size_t i = 0; i < types->size(); i++)
-        const_cast<AbstractStoragePool **>(this->types)[i] = types->at(i).release();
+        const_cast<AbstractStoragePool **>(this->types)[i] = types->at(i);
 }
 
 SkillFile::~SkillFile() {
-    for (size_t i = 0; i < size(); i++)
-        delete types[i];
     delete[] types;
     delete typesByName;
     delete strings;

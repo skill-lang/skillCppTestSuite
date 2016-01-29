@@ -195,11 +195,16 @@ namespace skill {
         template<typename T, TypeID id>
         struct SingleBaseTypeContainer : public BuiltinFieldType<T *, 15> {
             const FieldType *const base;
+        private:
+            const bool destroyBase;
+        public:
 
-            SingleBaseTypeContainer(const FieldType *const base) : base(base) { }
+            SingleBaseTypeContainer(const FieldType *const base)
+                    : base(base),
+                      destroyBase(base->requiresDestruction()) { }
 
             virtual ~SingleBaseTypeContainer() {
-                if (base->requiresDestruction())
+                if (destroyBase)
                     delete base;
             }
 
@@ -317,14 +322,19 @@ namespace skill {
         struct MapType : public BuiltinFieldType<std::map<api::Box, api::Box> *, 20> {
             const FieldType *const key;
             const FieldType *const value;
+        private:
+            const bool destroyKey;
+            const bool destroyValue;
+        public:
 
             MapType(const FieldType *const key, const FieldType *const value)
-                    : key(key), value(value) { }
+                    : key(key), value(value), destroyKey(key->requiresDestruction()),
+                      destroyValue(value->requiresDestruction()) { }
 
             virtual ~MapType() {
-                if (key->requiresDestruction())
+                if (destroyKey)
                     delete key;
-                if (value->requiresDestruction())
+                if (destroyValue)
                     delete value;
             }
 

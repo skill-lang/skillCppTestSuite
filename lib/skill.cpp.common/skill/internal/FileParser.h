@@ -39,7 +39,7 @@ namespace skill {
          * of the respective user type may follow after the field declaration.
          */
         inline const FieldType *parseFieldType(FileInputStream *in,
-                                               const std::vector<std::unique_ptr<AbstractStoragePool>> *types,
+                                               const std::vector<AbstractStoragePool *> *types,
                                                StringPool *String,
                                                AnnotationType *Annotation,
                                                int blockCounter) {
@@ -92,7 +92,7 @@ namespace skill {
 
                 default:
                     if (i >= 32 && i - 32 < (TypeID) types->size())
-                        return types->at(i - 32).get();
+                        return types->at(i - 32);
                     else
                         throw ParseException(in, blockCounter,
                                              "Invalid type ID");
@@ -121,7 +121,7 @@ namespace skill {
                                      WriteMode mode,
                                      StringPool *String,
                                      AnnotationType *Annotation,
-                                     std::vector<std::unique_ptr<AbstractStoragePool>> *types,
+                                     std::vector<AbstractStoragePool *> *types,
                                      api::typeByName_t *typesByName,
                                      std::vector<std::unique_ptr<MappedInStream>> &dataList)
         >
@@ -136,10 +136,10 @@ namespace skill {
 
             // PARSE STATE
             std::unique_ptr<StringPool> String(initializeStrings(in.get()));
-            std::unique_ptr<std::vector<std::unique_ptr<AbstractStoragePool>>> types(
-                    new std::vector<std::unique_ptr<AbstractStoragePool>>());
+            std::vector<AbstractStoragePool *> *types =
+                    new std::vector<AbstractStoragePool *>;
+            std::unique_ptr<AnnotationType> Annotation(new AnnotationType(types));
             std::unique_ptr<api::typeByName_t> typesByName(new api::typeByName_t);
-            std::unique_ptr<AnnotationType> Annotation(new AnnotationType(types.get()));
             std::vector<std::unique_ptr<MappedInStream>> dataList;
 
             // process stream
@@ -257,7 +257,7 @@ namespace skill {
                                         std::string("Type ").append(*name).append(
                                                 " refers to an ill-formed super type."));
                             } else {
-                                superPool = types->at(superID - 1).get();
+                                superPool = types->at(superID - 1);
                                 assert(superPool);
                             }
 
@@ -266,7 +266,7 @@ namespace skill {
                                     (TypeID) types->size() + 32, name, superPool, rest.get(), String->keeper);
                             rest.release();
 
-                            types->push_back(std::unique_ptr<AbstractStoragePool>(r));
+                            types->push_back(r);
                             defIter = typesByName->insert(
                                     std::pair<api::String, AbstractStoragePool *>(name, r)).first;
                         }
@@ -353,7 +353,7 @@ namespace skill {
                                     << " at " << in->getPosition() << std::endl;
                                 }
 
-                                const auto t = parseFieldType(in.get(), types.get(), String.get(), Annotation.get(),
+                                const auto t = parseFieldType(in.get(), types, String.get(), Annotation.get(),
                                                               blockCounter);
 
                                 // parse field restrictions
@@ -471,7 +471,7 @@ namespace skill {
             }
 
             // note there still isn't a single instance
-            return makeState(in.release(), mode, String.release(), Annotation.release(), types.release(),
+            return makeState(in.release(), mode, String.release(), Annotation.release(), types,
                              typesByName.release(),
                              dataList);
         }
@@ -480,13 +480,13 @@ namespace skill {
          * has to be called by make state after instances have been allocated to ensure
          * that required fields are read from file
          */
-        inline void triggerFieldDeserialization(std::vector<std::unique_ptr<AbstractStoragePool>> *types,
+        inline void triggerFieldDeserialization(std::vector<AbstractStoragePool *> *types,
                                                 std::vector<std::unique_ptr<MappedInStream>> &dataList) {
 
             //val errors = new ConcurrentLinkedQueue[Throwable]
             //val barrier = new Barrier
             // stack-local thread pool als alternative zu barrier; thread::yield!
-            for (auto &t : *types) {
+            for (auto t : *types) {
                 for (FieldDeclaration *f : t->dataFields) {
                     int bsIndex = 0;
 

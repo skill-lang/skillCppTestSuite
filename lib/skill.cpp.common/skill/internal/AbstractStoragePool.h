@@ -21,6 +21,9 @@ namespace skill {
     namespace api {
         class SkillFile;
     }
+    namespace iterators {
+        class AllObjectIterator;
+    }
     using restrictions::TypeRestriction;
     namespace internal {
 /**
@@ -203,6 +206,11 @@ namespace skill {
             SKilLID staticSize() {
                 return staticDataInstances + newObjectsSize();
             }
+
+            /**
+             * Returns instances as api::SkillObjects; required for reflection
+             */
+            virtual std::unique_ptr<iterators::AllObjectIterator> allObjects() const = 0;
 
             /**
              * the size of this pool, including subpools and new objects

@@ -20,9 +20,10 @@ namespace skill {
         class AbstractField {
         protected:
             AbstractField(const FieldType *const type, String const name)
-                    : type(type), name(name) { }
+                    : type(type), name(name), typeRequiresDestruction(type->requiresDestruction()) { }
 
             virtual ~AbstractField();
+
         public:
 
             const FieldType *const type;
@@ -43,6 +44,10 @@ namespace skill {
              * they do not require boxing
              */
             virtual void setR(Object *i, Box v) = 0;
+
+        private:
+            //! true iff type has to be destroyed by this field
+            const bool typeRequiresDestruction;
         };
     }
 }

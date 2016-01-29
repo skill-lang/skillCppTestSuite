@@ -10,6 +10,7 @@
 #include "../restrictions/TypeRestriction.h"
 #include "../iterators/TypeOrderIterator.h"
 #include "../iterators/DynamicDataIterator.h"
+#include "../iterators/AllObjectIterator.h"
 
 namespace skill {
     namespace iterators {
@@ -98,6 +99,11 @@ namespace skill {
 
             virtual api::Object *getAsAnnotation(SKilLID id) const {
                 return get(id);
+            }
+
+            virtual std::unique_ptr<iterators::AllObjectIterator> allObjects() const {
+                return std::unique_ptr<iterators::AllObjectIterator>(
+                        new iterators::AllObjectIterator::Implementation<T, B>(all()));
             }
 
             iterators::StaticDataIterator<T, B> staticInstances() const {
