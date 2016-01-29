@@ -5,16 +5,19 @@
 #ifndef SKILL_CPP_COMMON_BOX_H
 #define SKILL_CPP_COMMON_BOX_H
 
-
 #include <cstdint>
-#include <vector>
-#include <set>
-#include <map>
+#include <type_traits>
 #include "String.h"
 #include "Object.h"
 
 namespace skill {
     namespace api {
+        class BoxedArray;
+
+        class BoxedSet;
+
+        class BoxedMap;
+
         /**
          * This union represents the *unknown* object.
          * It is required for skill reflection.
@@ -29,13 +32,18 @@ namespace skill {
             double f64;
             String string;
             //! T[i]
-            Box *array;
+            BoxedArray *array;
             //! T[] & list<T>*
-            std::vector<Box> *list;
-            std::set<Box> *set;
-            std::map<Box, Box> *map;
+            BoxedArray *list;
+            BoxedSet *set;
+            BoxedMap *map;
             Object *annotation;
         };
+
+        // required by reflection
+        inline Box box(const Box x) {
+            return x;
+        }
 
         inline Box box(const bool x) {
             Box r;
@@ -85,25 +93,19 @@ namespace skill {
             return r;
         }
 
-        inline Box box(Box *const x) {
+        inline Box box(BoxedArray *const x) {
             Box r;
             r.array = x;
             return r;
         }
 
-        inline Box box(std::vector<Box> *x) {
-            Box r;
-            r.list = x;
-            return r;
-        }
-
-        inline Box box(std::set<Box> *x) {
+        inline Box box(BoxedSet *x) {
             Box r;
             r.set = x;
             return r;
         }
 
-        inline Box box(std::map<Box, Box> *x) {
+        inline Box box(BoxedMap *x) {
             Box r;
             r.map = x;
             return r;
@@ -113,6 +115,72 @@ namespace skill {
             Box r;
             r.annotation = x;
             return r;
+        }
+
+        template<typename T>
+        inline T unbox(const Box &b) {
+
+            //! project T onto a boxed map type, if more concrete
+            typedef typename std::conditional<std::is_assignable<BoxedMap *, T>::value,
+                    BoxedMap *,
+                    T>::type flat;
+
+            return unbox<flat>(b);
+        }
+
+        template<>
+        inline Box unbox(const Box &b) {
+            return b;
+        }
+
+        template<>
+        inline bool unbox(const Box &b) {
+            return b.boolean;
+        }
+
+        template<>
+        inline int8_t unbox(const Box &b) {
+            return b.i8;
+        }
+
+        template<>
+        inline int16_t unbox(const Box &b) {
+            return b.i16;
+        }
+
+        template<>
+        inline int32_t unbox(const Box &b) {
+            return b.i32;
+        }
+
+        template<>
+        inline int64_t unbox(const Box &b) {
+            return b.i64;
+        }
+
+        template<>
+        inline float unbox(const Box &b) {
+            return b.f32;
+        }
+
+        template<>
+        inline double unbox(const Box &b) {
+            return b.f64;
+        }
+
+        template<>
+        inline BoxedArray *unbox(const Box &b) {
+            return b.array;
+        }
+
+        template<>
+        inline BoxedSet *unbox(const Box &b) {
+            return b.set;
+        }
+
+        template<>
+        inline BoxedMap *unbox(const Box &b) {
+            return b.map;
         }
 
         inline bool operator<(const Box l, const Box r) {

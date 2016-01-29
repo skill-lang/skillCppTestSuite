@@ -9,6 +9,7 @@
 
 namespace skill {
     namespace internal {
+        class DistributedField;
         class AbstractStoragePool;
     }
     namespace fieldTypes {
@@ -22,6 +23,7 @@ namespace skill {
          */
         class Object {
             friend class internal::AbstractStoragePool;
+            friend class internal::DistributedField;
 
             friend class fieldTypes::AnnotationType;
 

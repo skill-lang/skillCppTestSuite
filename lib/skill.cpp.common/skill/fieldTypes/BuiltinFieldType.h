@@ -7,6 +7,7 @@
 
 #include "FieldType.h"
 #include "../utils.h"
+#include "../api/types.h"
 
 namespace skill {
     using streams::InStream;
@@ -216,16 +217,16 @@ namespace skill {
 
             virtual api::Box read(streams::MappedInStream &in) const {
                 api::Box r;
-                r.array = new api::Box[length];
+                r.array = new api::Array<api::Box>(length);
                 for (size_t i = 0; i < length; i++)
-                    r.array[i] = this->base->read(in);
+                    r.array->update(i, this->base->read(in));
                 return r;
             }
 
             virtual uint64_t offset(const api::Box &target) const {
                 uint64_t rval = 0;
                 for (size_t i = 0; i < length; i++)
-                    rval += this->base->offset(target.array[i]);
+                    rval += this->base->offset(target.array->get(i));
                 return rval;
             }
 
@@ -242,16 +243,16 @@ namespace skill {
             virtual api::Box read(streams::MappedInStream &in) const {
                 api::Box r;
                 size_t length = (size_t) in.v64();
-                r.list = new std::vector<api::Box>;
+                r.list = new api::Array<api::Box>(length);
                 for (size_t i = 0; i < length; i++)
-                    r.list->push_back(this->base->read(in));
+                    r.list->update(i, this->base->read(in));
                 return r;
             }
 
             virtual uint64_t offset(const api::Box &target) const {
-                uint64_t rval = V64FieldType::offset((int64_t) target.list->size());
-                for (auto b : *target.list)
-                    rval += this->base->offset(b);
+                uint64_t rval = V64FieldType::offset((int64_t) target.list->length());
+                for (size_t i = 0; i < target.list->length(); i++)
+                    rval += this->base->offset(target.list->get(i));
                 return rval;
             }
 
@@ -268,16 +269,16 @@ namespace skill {
             virtual api::Box read(streams::MappedInStream &in) const {
                 api::Box r;
                 size_t length = (size_t) in.v64();
-                r.list = new std::vector<api::Box>;
+                r.list = new api::Array<api::Box>(length);
                 for (size_t i = 0; i < length; i++)
-                    r.list->push_back(this->base->read(in));
+                    r.list->update(i, this->base->read(in));
                 return r;
             }
 
             virtual uint64_t offset(const api::Box &target) const {
-                uint64_t rval = V64FieldType::offset((int64_t) target.list->size());
-                for (auto b : *target.list)
-                    rval += this->base->offset(b);
+                uint64_t rval = V64FieldType::offset((int64_t) target.list->length());
+                for (size_t i = 0; i < target.list->length(); i++)
+                    rval += this->base->offset(target.list->get(i));
                 return rval;
             }
 
@@ -286,7 +287,7 @@ namespace skill {
             }
         };
 
-        struct SetType : public SingleBaseTypeContainer<std::set<api::Box> *, 19> {
+        struct SetType : public SingleBaseTypeContainer<api::BoxedSet *, 19> {
 
             SetType(const FieldType *const base)
                     : SingleBaseTypeContainer(base) { }
@@ -294,16 +295,17 @@ namespace skill {
             virtual api::Box read(streams::MappedInStream &in) const {
                 api::Box r;
                 size_t length = (size_t) in.v64();
-                r.set = new std::set<api::Box>;
+                r.set = new api::Set<api::Box>();
                 for (size_t i = 0; i < length; i++)
-                    r.set->insert(this->base->read(in));
+                    r.set->add(this->base->read(in));
                 return r;
             }
 
             virtual uint64_t offset(const api::Box &target) const {
-                uint64_t rval = V64FieldType::offset((int64_t) target.set->size());
-                for (auto b : *target.set)
-                    rval += this->base->offset(b);
+                uint64_t rval = V64FieldType::offset((int64_t) target.set->length());
+                auto bs = target.set->all();
+                while (bs->hasNext())
+                    rval += this->base->offset(bs->next());
                 return rval;
             }
 
@@ -329,18 +331,20 @@ namespace skill {
             virtual api::Box read(streams::MappedInStream &in) const {
                 api::Box r;
                 size_t length = (size_t) in.v64();
-                r.map = new std::map<api::Box, api::Box>;
+                r.map = new api::Map<api::Box, api::Box>;
                 for (size_t i = 0; i < length; i++) {
-                    const auto& k = key->read(in);
-                    const auto& v = value->read(in);
-                    (*r.map)[k] = v;
+                    const auto &k = key->read(in);
+                    const auto &v = value->read(in);
+                    r.map->update(k, v);
                 }
                 return r;
             }
 
             virtual uint64_t offset(const api::Box &target) const {
-                uint64_t rval = V64FieldType::offset((int64_t) target.map->size());
-                for (auto b : *target.map) {
+                uint64_t rval = V64FieldType::offset((int64_t) target.map->length());
+                auto bs = target.map->all();
+                while (bs->hasNext()) {
+                    auto b = bs->next();
                     rval += key->offset(b.first);
                     rval += value->offset(b.second);
                 }

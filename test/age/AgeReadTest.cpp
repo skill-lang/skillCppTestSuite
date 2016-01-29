@@ -7,7 +7,6 @@
 #include <skill/internal/UnknownObject.h>
 #include "../../src/age/File.h"
 #include "../../src/age/StringKeeper.h"
-#include "../../src/age/Types.h"
 
 using ::age::api::SkillFile;
 

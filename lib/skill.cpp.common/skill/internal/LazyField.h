@@ -6,16 +6,16 @@
 #define SKILL_CPP_COMMON_LAZYFIELD_H
 
 
-#include "FieldDeclaration.h"
+#include "DistributedField.h"
 
 namespace skill {
     namespace internal {
-        class LazyField : public FieldDeclaration {
+        class LazyField : public DistributedField {
 
         public:
             LazyField(const FieldType *const type, const api::string_t *name,
                       AbstractStoragePool *const owner)
-                    : FieldDeclaration(type, name, owner) { }
+                    : DistributedField(type, name, owner) { }
 
             virtual ~LazyField() { }
 

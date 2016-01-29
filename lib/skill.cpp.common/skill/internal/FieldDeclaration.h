@@ -7,6 +7,9 @@
 
 #include "FileStructure.h"
 #include "../api/AbstractField.h"
+#include "../restrictions/FieldRestriction.h"
+#include <vector>
+#include <unordered_set>
 
 namespace skill {
     namespace internal {
@@ -44,6 +47,22 @@ namespace skill {
             void addChunk(Chunk *c) {
                 dataChunks.push_back(c);
             }
+
+            /**
+             * Restriction handling.
+             */
+        protected:
+            std::unordered_set<const restrictions::CheckableRestriction *> checkedRestrictions;
+            std::unordered_set<const restrictions::FieldRestriction *> otherRestrictions;
+        public:
+            void addRestriction(const restrictions::FieldRestriction *r);
+
+            /**
+             * Check restrictions of the field.
+             *
+             * @return true, iff field fulfills all restrictions
+             */
+            virtual bool check() const = 0;
 
             /**
              * Read data from a mapped input stream and set it accordingly. This is invoked at the very end of state

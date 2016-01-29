@@ -28,3 +28,19 @@ SkillFile::~SkillFile() {
     delete annotation;
     delete fromFile;
 }
+
+void SkillFile::check() {
+
+    // TODO par
+    // TODO a more efficient solution would be helpful
+    // TODO lacks type restrictions
+    // @note this should be more like, each pool is checking its type restriction, aggergating its field restrictions,
+    // and if there are any, then they will all be checked using (hopefully) overridden check methods
+    for (const auto &p : *this)
+        for (const auto &f : p->dataFields)
+            if (!f->check()) {
+                std::stringstream message;
+                message << "check failed in " << *p->name << "." << *f->name << std::endl;
+                throw SkillException(message.str());
+            }
+}

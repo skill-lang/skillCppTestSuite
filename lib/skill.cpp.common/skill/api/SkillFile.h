@@ -103,7 +103,7 @@ namespace skill {
              * @throws SkillException
              *             if an inconsistency is found
              */
-            void check() { };
+            void check();
 
             /**
              * Check consistency and write changes to disk.
