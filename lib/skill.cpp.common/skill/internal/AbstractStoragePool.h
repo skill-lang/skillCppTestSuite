@@ -240,7 +240,7 @@ namespace skill {
 
             virtual api::Box read(streams::MappedInStream &in) const {
                 api::Box r;
-                r.annotation = getAsAnnotation((SKilLID) in.v64());
+                r.annotation = getAsAnnotation((SKilLID) (in.has(9) ? in.v64checked() : in.v64()));
                 return r;
             }
 

@@ -15,7 +15,7 @@
 #include "../restrictions/TypeRestriction.h"
 #include "../fieldTypes/BuiltinFieldType.h"
 #include "../fieldTypes/AnnotationType.h"
-#include "ThreadPool.h"
+#include "../concurrent/ThreadPool.h"
 
 #include <vector>
 #include <unordered_map>
@@ -455,8 +455,8 @@ namespace skill {
         inline void triggerFieldDeserialization(std::vector<AbstractStoragePool *> *types,
                                                 std::vector<std::unique_ptr<MappedInStream>> &dataList) {
 
-            //val errors = new ConcurrentLinkedQueue[Throwable]
-            //val barrier = new Barrier
+            std::vector<std::future<std::string *>> results;
+
             // stack-local thread pool als alternative zu barrier; thread::yield!
             for (auto t : *types) {
                 for (FieldDeclaration *f : t->dataFields) {
@@ -472,21 +472,40 @@ namespace skill {
                         if (dc->count) {
                             //   barrier.begin
                             MappedInStream *in = dataList[blockIndex].get();
-                            //ThreadPool::global.run([=]() -> void {
-                            //TODO try/catch
-                            f->read(in, dc);
-                            //barrier.end
-                            //    });
+                            results.push_back(concurrent::ThreadPool::global.execute(
+                                    [](FieldDeclaration *f, MappedInStream *in, Chunk *dc) -> std::string * {
+                                        try {
+                                            f->read(in, dc);
+                                        } catch (SkillException e) {
+                                            return new std::string(e.message);
+                                        } catch (...) {
+                                            return new std::string("unknown error in concurrent read");
+                                        }
+                                        return nullptr;
+                                    }, f, in, dc));
                         }
                     }
                 }
             }
 
-            //   barrier.await
+            bool failed = false;
+            for (auto &r : results)
+                if (nullptr != r.get())
+                    failed = true;
 
-            // re-throw first error
-            // if (!errors.isEmpty())
-            //    throw errors.peek();
+            // check for errors
+            if (failed) {
+                std::stringstream msg;
+
+                for (auto &r : results) {
+                    std::string *s = r.get();
+                    if (s) {
+                        msg << *s << std::endl;
+                        delete s;
+                    }
+                }
+                throw SkillException(msg.str());
+            }
         }
     }
 }

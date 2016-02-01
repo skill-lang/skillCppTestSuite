@@ -5,7 +5,7 @@
 #include "ThreadPool.h"
 #include <iostream>
 
-using namespace skill::internal;
+using namespace skill::concurrent;
 
 ThreadPool ThreadPool::global;
 

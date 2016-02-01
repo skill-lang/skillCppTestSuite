@@ -143,8 +143,47 @@ namespace skill {
                         }
                     }
                 }
-                if(position > end)
+                if (position > end)
                     throw SkillException("unexpected end of stream");
+                return rval;
+            }
+
+            //! checked version of v64 that will not throw an exception
+            //! @note checked means checked by the caller!
+            inline int64_t v64checked() throw() {
+                register uint64_t r, rval;
+
+                if (0 != ((rval = *(position++)) & 0x80)) {
+                    rval = (rval & 0x7f) | (((r = *(position++)) & 0x7f) << 7);
+
+                    if (0 != (r & 0x80)) {
+                        rval |= ((r = *(position++)) & 0x7f) << 14;
+
+                        if (0 != (r & 0x80)) {
+                            rval |= ((r = *(position++)) & 0x7f) << 21;
+
+                            if (0 != (r & 0x80)) {
+                                rval |= ((uint64_t) (r = *(position++)) & 0x7f) << 28;
+
+                                if (0 != (r & 0x80)) {
+                                    rval |= ((uint64_t) (r = *(position++)) & 0x7f) << 35;
+
+                                    if (0 != (r & 0x80)) {
+                                        rval |= ((uint64_t) (r = *(position++)) & 0x7f) << 42;
+
+                                        if (0 != (r & 0x80)) {
+                                            rval |= ((uint64_t) (r = *(position++)) & 0x7f) << 49;
+
+                                            if (0 != (r & 0x80)) {
+                                                rval |= (((uint64_t) *(position++)) << 56);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
                 return rval;
             }
 
@@ -214,8 +253,12 @@ namespace skill {
                 return (long) position - (long) base;
             }
 
-            inline bool eof() const {
+            inline bool eof() const throw() {
                 return position >= end;
+            }
+
+            inline bool has(size_t amountLeft) const throw() {
+                return position + amountLeft < end;
             }
         };
     }

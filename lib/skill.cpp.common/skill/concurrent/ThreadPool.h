@@ -16,7 +16,7 @@
 #include <stdexcept>
 
 namespace skill {
-    namespace internal {
+    namespace concurrent {
 
         /**
          * A thread pool.
