@@ -27,6 +27,8 @@ namespace skill {
          */
         struct BoxedMap {
 
+            virtual ~BoxedMap() { }
+
             /**
              * k € this
              */
@@ -85,6 +87,8 @@ namespace skill {
         public:
 
             Map() : std::map<K, V>() { }
+
+            virtual ~Map() { }
 
             virtual bool contains(const Box &k) const {
                 return this->find(unbox<K>(k)) != this->end();

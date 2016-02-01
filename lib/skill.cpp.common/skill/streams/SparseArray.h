@@ -17,11 +17,28 @@ namespace skill {
          */
         template<typename T>
         struct SparseArray {
-            // construct in an invalid state
+        private:
+            SparseArray(T *p, size_t size)
+                    : p(p), size(size) { }
+
+        public:
+            //! construct in an invalid state
             SparseArray() : p(nullptr), size(0) { }
 
-            SparseArray(size_t size) : p(new T[size]), size(size) {
-                // TODO not sparse at all
+            /**
+             * @param size
+             *      the desired size of the array
+             *
+             * @param dense
+             *      if set to true, the representation will likely be an actual array
+             */
+            SparseArray(size_t size, bool dense = false) : p(nullptr), size(size) {
+                // represent small and dense arrays by arrays
+                if (dense || (sizeof(T) * size) < 4096L)
+                    new(this) SparseArray(new T[size], size);
+                else {
+                    throw "TODO";
+                }
             }
 
             ~SparseArray() {

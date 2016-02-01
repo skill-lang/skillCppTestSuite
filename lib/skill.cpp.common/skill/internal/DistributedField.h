@@ -24,7 +24,7 @@ namespace skill {
                              AbstractStoragePool *const owner)
                     : FieldDeclaration(type, name, owner), data(), newData() { }
 
-            virtual ~DistributedField() { }
+            virtual ~DistributedField();
 
             virtual api::Box getR(const api::Object *i);
 
@@ -33,6 +33,10 @@ namespace skill {
             virtual void read(const streams::MappedInStream *in, const Chunk *target);
 
             virtual bool check() const;
+
+        private:
+            // destructor helper method
+            inline void deleteBoxedContainer(api::Box b, const FieldType *const typeID);
         };
     }
 }

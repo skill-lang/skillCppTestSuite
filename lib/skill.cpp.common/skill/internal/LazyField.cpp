@@ -34,7 +34,8 @@ void LazyField::ensureIsLoaded() {
 }
 
 void LazyField::load() {
-    new(&data) streams::SparseArray<api::Box>((size_t) owner->basePool->size());
+    new(&data) streams::SparseArray<api::Box>((size_t) owner->basePool->size(),
+                                              !owner->superPool);
 
     for (const auto &e : *parts) {
         const auto &target = e.first;
@@ -42,13 +43,13 @@ void LazyField::load() {
         skill::streams::MappedInStream &in = *part;
 
         try {
-            if (target->isSimple()) {
-                for (::skill::SKilLID i = ((::skill::internal::SimpleChunk *) target)->bpo,
+            if (dynamic_cast<const SimpleChunk *>(target)) {
+                for (::skill::SKilLID i = ((const ::skill::internal::SimpleChunk *) target)->bpo,
                              high = i + target->count; i != high; i++)
                     data[i] = type->read(in);
             } else {
                 //case bci : BulkChunk ⇒
-                for (int i = 0; i < ((::skill::internal::BulkChunk *) target)->blockCount; i++) {
+                for (int i = 0; i < ((const ::skill::internal::BulkChunk *) target)->blockCount; i++) {
                     const auto &b = owner->blocks[i];
                     for (::skill::SKilLID i = b.bpo, end = i + b.dynamicCount; i != end; i++)
                         data[i] = type->read(in);

@@ -27,6 +27,8 @@ namespace skill {
          */
         struct BoxedSet {
 
+            virtual ~BoxedSet() { }
+
             /**
              * b € this
              */
@@ -56,7 +58,7 @@ namespace skill {
             public:
                 BoxedIterator(const Set *self) : state(self->begin()), last(self->end()) { }
 
-                virtual bool hasNext() const{
+                virtual bool hasNext() const {
                     return state != last;
                 }
 
@@ -68,6 +70,8 @@ namespace skill {
         public:
 
             Set() : std::set<T>() { }
+
+            virtual ~Set() { };
 
             virtual bool contains(const Box &b) const {
                 return this->find(unbox<T>(b)) != this->end();

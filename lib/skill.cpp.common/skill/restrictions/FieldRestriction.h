@@ -12,7 +12,12 @@
 namespace skill {
     namespace restrictions {
         struct FieldRestriction {
+            const int id;
+
             virtual ~FieldRestriction();
+
+        protected:
+            FieldRestriction(int id) : id(id) { };
         };
 
         using api::Box;
@@ -24,6 +29,9 @@ namespace skill {
              * @return true, iff argument fulfills the restriction
              */
             virtual bool check(Box v) const = 0;
+
+        protected:
+            CheckableRestriction(int id) : FieldRestriction(id) { };
         };
 
         struct NonNull : public CheckableRestriction {
@@ -36,14 +44,14 @@ namespace skill {
         private:
             const static NonNull instance;
 
-            NonNull() { }
+            NonNull() : CheckableRestriction(0) { }
         };
 
         template<typename T>
         struct FieldDefault : public FieldRestriction {
             const T value;
 
-            FieldDefault(T v) : value(v) { };
+            FieldDefault(T v) : FieldRestriction(1), value(v) { };
         };
 
         template<typename T>
@@ -54,7 +62,9 @@ namespace skill {
             /**
              * construct from inclusive ranges
              */
-            Range(T min, T max) : min(min), max(max) { assert(min <= max); };
+            Range(T min, T max) : CheckableRestriction(3), min(min), max(max) {
+                assert(min <= max);
+            };
 
             virtual bool check(Box v) const {
                 const T x = api::unbox<T>(v);
@@ -65,7 +75,7 @@ namespace skill {
         struct Coding : public FieldRestriction {
             const api::String coding;
 
-            Coding(api::String coding) : coding(coding) { }
+            Coding(api::String coding) : FieldRestriction(5), coding(coding) { }
         };
 
         struct ConstantLengthPointer : public FieldRestriction {
@@ -74,7 +84,7 @@ namespace skill {
         private:
             const static ConstantLengthPointer instance;
 
-            ConstantLengthPointer() { }
+            ConstantLengthPointer() : FieldRestriction(7) { }
         };
 
     }

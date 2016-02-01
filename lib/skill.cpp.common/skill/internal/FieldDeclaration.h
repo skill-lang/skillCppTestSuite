@@ -39,7 +39,7 @@ namespace skill {
             }
 
         public:
-            virtual ~FieldDeclaration() { };
+            virtual ~FieldDeclaration();
 
             //! internal use only!
             std::vector<Chunk *> dataChunks;

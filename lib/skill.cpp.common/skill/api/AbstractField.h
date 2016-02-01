@@ -45,7 +45,7 @@ namespace skill {
              */
             virtual void setR(Object *i, Box v) = 0;
 
-        private:
+        protected:
             //! true iff type has to be destroyed by this field
             const bool typeRequiresDestruction;
         };

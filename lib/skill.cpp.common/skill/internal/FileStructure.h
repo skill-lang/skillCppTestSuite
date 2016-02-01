@@ -56,8 +56,7 @@ namespace skill {
             Chunk(size_t begin, size_t end, SKilLID count)
                     : begin(begin), end(end), count(count) { }
 
-            //! @return true iff a simple chunk
-            virtual bool isSimple() const = 0;
+            virtual ~Chunk() { }
 
             size_t begin;
             size_t end;
@@ -74,7 +73,7 @@ namespace skill {
             SimpleChunk(size_t begin, size_t end, SKilLID count, const SKilLID bpo)
                     : Chunk(begin, end, count), bpo(bpo) { }
 
-            virtual bool isSimple() const { return true; };
+            virtual ~SimpleChunk() { }
 
             const SKilLID bpo;
         };
@@ -91,7 +90,7 @@ namespace skill {
             BulkChunk(size_t begin, size_t end, SKilLID count, const int blockCount)
                     : Chunk(begin, end, count), blockCount(blockCount) { }
 
-            virtual bool isSimple() const { return false; };
+            virtual ~BulkChunk() { }
 
             const int blockCount;
         };

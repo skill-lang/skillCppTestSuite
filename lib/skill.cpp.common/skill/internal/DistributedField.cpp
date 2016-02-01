@@ -20,18 +20,19 @@ void DistributedField::setR(api::Object *i, api::Box v) {
 
 void DistributedField::read(const streams::MappedInStream *part, const Chunk *target) {
     if (!data.p)
-        new(&data) streams::SparseArray<api::Box>((size_t) owner->basePool->size());
+        new(&data) streams::SparseArray<api::Box>((size_t) owner->basePool->size(),
+                                                  !owner->superPool);
 
     skill::streams::MappedInStream in(part, target->begin, target->end);
 
     try {
-        if (target->isSimple()) {
-            for (::skill::SKilLID i = ((::skill::internal::SimpleChunk *) target)->bpo,
+        if (dynamic_cast<const SimpleChunk *>(target)) {
+            for (::skill::SKilLID i = ((const ::skill::internal::SimpleChunk *) target)->bpo,
                          high = i + target->count; i != high; i++)
                 data[i] = type->read(in);
         } else {
             //case bci : BulkChunk ⇒
-            for (int i = 0; i < ((::skill::internal::BulkChunk *) target)->blockCount; i++) {
+            for (int i = 0; i < ((const ::skill::internal::BulkChunk *) target)->blockCount; i++) {
                 const auto &b = owner->blocks[i];
                 for (::skill::SKilLID i = b.bpo, end = i + b.dynamicCount; i != end; i++)
                     data[i] = type->read(in);
@@ -71,4 +72,44 @@ bool DistributedField::check() const {
         }
     }
     return true;
+}
+
+
+inline void DistributedField::deleteBoxedContainer(api::Box b, const FieldType *const type) {
+    switch (type->typeID) {
+        case 15:
+        case 17:
+        case 18:
+            delete b.array;
+            return;
+        case 19:
+            delete b.set;
+            return;
+
+        case 20:
+            if (20 == ((const fieldTypes::MapType *const) type)->value->typeID) {
+                auto ps = b.map->all();
+                while (ps->hasNext())
+                    deleteBoxedContainer(ps->next().second, ((const fieldTypes::MapType *const) type)->value);
+            }
+            delete b.map;
+            return;
+        default:
+            return;
+    }
+}
+
+
+DistributedField::~DistributedField() {
+    // delete containers stored in a box
+    if (this->typeRequiresDestruction) {
+        //! all container types require destruction; other types may no longer exist
+        for (const auto &b : owner->blocks)
+            for (auto i = b.bpo; i < b.bpo + b.dynamicCount; i++)
+                deleteBoxedContainer(data[i], this->type);
+
+        for (const auto &i : newData)
+            deleteBoxedContainer(i.second, this->type);
+
+    }
 }

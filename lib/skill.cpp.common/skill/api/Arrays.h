@@ -19,6 +19,8 @@ namespace skill {
          * @note representation is always a std::vector
          */
         struct BoxedArray {
+            virtual ~BoxedArray() { }
+
             /**
              * get boxed value at position i
              *
@@ -48,9 +50,9 @@ namespace skill {
         template<typename T>
         struct Array : public std::vector<T>, public BoxedArray {
 
-            Array(size_t length) : std::vector<T>(length) {
+            Array(size_t length) : std::vector<T>(length) { }
 
-            }
+            virtual ~Array() { }
 
             virtual Box get(size_t i) const {
                 return box(this->at(i));
