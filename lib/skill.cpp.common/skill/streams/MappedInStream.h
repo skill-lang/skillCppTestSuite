@@ -20,7 +20,7 @@ namespace skill {
             friend class FileInputStream;
 
             //! only file input streams can create mapped streams
-            MappedInStream(const void *base, uint8_t *position, const void *end);
+            MappedInStream(void *base, uint8_t *position, void *end);
 
         public:
             //! create a view of another mapped stream

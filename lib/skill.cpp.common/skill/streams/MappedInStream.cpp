@@ -5,14 +5,12 @@
 #include "MappedInStream.h"
 
 skill::streams::MappedInStream::MappedInStream(
-        const void *base, uint8_t *position, const void *end) {
-    this->base = base;
+        void *base, uint8_t *position, void *end)
+        : InStream(base, end) {
     this->position = position;
-    this->end = end;
 }
 
-skill::streams::MappedInStream::MappedInStream(const skill::streams::MappedInStream *other, size_t begin, size_t end) {
-    this->base = other->position + begin;
+skill::streams::MappedInStream::MappedInStream(const skill::streams::MappedInStream *other, size_t begin, size_t end)
+        : InStream(other->position + begin, other->position + end) {
     this->position = (uint8_t *) base;
-    this->end = other->position + end;
 }

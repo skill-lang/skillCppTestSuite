@@ -6,7 +6,7 @@
 #define SKILL_CPP_COMMON_INSTREAM_H
 
 #include <string>
-#include <cstdint>
+#include "Stream.h"
 #include "../api/String.h"
 #include "../api/Box.h"
 #include "../api/SkillException.h"
@@ -21,7 +21,7 @@ namespace skill {
         *
         * @author Timm Felden
         */
-        class InStream {
+        class InStream : public Stream {
             static inline void ensure(const bool condition) {
                 if (!condition)
                     throw SkillException("unexpected end of stream");
@@ -29,20 +29,7 @@ namespace skill {
 
         protected:
 
-            /**
-             * base pointer of the stream.
-             * We keep the base pointer, because it is required for unmap and sane error reporting.
-             */
-            const void *base;
-
-            /**
-             * position inside of the stream
-             */
-            uint8_t *position;
-            /**
-             * end pointer of the stream. The stream is done, if position reached end.
-             */
-            const void *end;
+            InStream(void *base, void *end) : Stream(base, end) { }
 
         public:
 
@@ -150,7 +137,7 @@ namespace skill {
 
             //! checked version of v64 that will not throw an exception
             //! @note checked means checked by the caller!
-            inline int64_t v64checked() throw() {
+            inline int64_t v64checked() noexcept {
                 register uint64_t r, rval;
 
                 if (0 != ((rval = *(position++)) & 0x80)) {
@@ -244,21 +231,6 @@ namespace skill {
                 String rval = new api::string_t((const char *) position, length, id);
                 position = position + length;
                 return rval;
-            }
-
-            /**
-             * the position of this stream inside of its bounds
-             */
-            long getPosition() const {
-                return (long) position - (long) base;
-            }
-
-            inline bool eof() const throw() {
-                return position >= end;
-            }
-
-            inline bool has(size_t amountLeft) const throw() {
-                return position + amountLeft < end;
             }
         };
     }

@@ -31,6 +31,10 @@ namespace skill {
              *
              * @param dense
              *      if set to true, the representation will likely be an actual array
+             *
+             *      @todo instead of using private map one could also add bpo and shift the base pointer respectively.
+             *      We would get same access time and little storage overhead, as little fields should be scattered over
+             *      multiple blocks in most use-cases.
              */
             SparseArray(size_t size, bool dense = false) : p(nullptr), size(size) {
                 // represent small and dense arrays by arrays

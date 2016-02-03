@@ -99,35 +99,30 @@ namespace skill {
                 if (index <= 0) return nullptr;
                 else if (index > lastID) throw SkillException("index of StringPool::get too large");
                 else {
+                    std::unique_lock<std::mutex>(lock);
                     String result = idMap[index];
                     if (nullptr == result) {
-                        // this kind of synchronization is not correct in general and I should know better not to do,
-                        // stuff like that (but I did it anyway:) )
-                        lock.lock();
-                        {
-                            // read result
-                            auto off = stringPositions[index];
-                            long mark = in->getPosition();
-                            in->jump(off.first);
-                            result = in->string(off.second, index);
-                            in->jump(mark);
+                        // read result
+                        auto off = stringPositions[index];
+                        long mark = in->getPosition();
+                        in->jump(off.first);
+                        result = in->string(off.second, index);
+                        in->jump(mark);
 
-                            // unify result with known strings
-                            auto it = knownStrings.find(result);
-                            if (it == knownStrings.end())
-                                // a new string
-                                knownStrings.insert(result);
-                            else {
-                                // a string that exists already;
-                                // the string cannot be from the file, so set the id
-                                delete result;
-                                result = *it;
-                                const_cast<string_t *>(result)->id = index;
-                            }
-
-                            idMap[index] = result;
+                        // unify result with known strings
+                        auto it = knownStrings.find(result);
+                        if (it == knownStrings.end())
+                            // a new string
+                            knownStrings.insert(result);
+                        else {
+                            // a string that exists already;
+                            // the string cannot be from the file, so set the id
+                            delete result;
+                            result = *it;
+                            const_cast<string_t *>(result)->id = index;
                         }
-                        lock.unlock();
+
+                        idMap[index] = result;
                     }
                     return result;
                 }

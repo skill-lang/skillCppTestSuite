@@ -15,7 +15,6 @@ namespace skill {
 
         class FileInputStream : public InStream {
 
-        private:
             /**
              * the path where this stream was opened from
              */
@@ -24,8 +23,12 @@ namespace skill {
             /**
              * the file object used for communication to the fs
              */
-            FILE const *file;
+            const FILE *const file;
 
+            /**
+             * required for replacing begin and end after map
+             */
+            FileInputStream(void *begin, void *end, const std::string &path, const FILE *file);
 
         public:
 
