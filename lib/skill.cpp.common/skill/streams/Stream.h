@@ -56,7 +56,7 @@ namespace skill {
             }
 
             inline bool has(size_t amountLeft) const noexcept {
-                return position + amountLeft < end;
+                return (position + amountLeft) < end;
             }
         };
     }

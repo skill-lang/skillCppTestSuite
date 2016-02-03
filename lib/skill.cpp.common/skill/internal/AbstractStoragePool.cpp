@@ -37,3 +37,22 @@ internal::AbstractStoragePool::~AbstractStoragePool() {
     for (auto f : dataFields)
         delete f;
 }
+
+void AbstractStoragePool::updateAfterCompress(SKilLID *lbpoMap) {
+    // update pointer to data
+    if (superPool)
+        allocateData();
+
+    // reset data chunks
+    for (auto f : dataFields)
+        f->resetChunks(cachedSize);
+
+    // reset blocks
+    // @note reset of data chunks may have required reading old block structure
+    blocks.clear();
+    blocks.push_back(Block(0, lbpoMap[poolOffset()], staticSize(), cachedSize));
+    for (auto s : subPools)
+        s->updateAfterCompress(lbpoMap);
+
+    clearNewObjects();
+}

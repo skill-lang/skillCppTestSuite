@@ -28,11 +28,6 @@ void LazyField::read(const streams::MappedInStream *in, const Chunk *target) {
     (*parts)[target] = new skill::streams::MappedInStream(in, target->begin, target->end);
 }
 
-void LazyField::ensureIsLoaded() {
-    if (!isLoaded())
-        load();
-}
-
 void LazyField::load() {
     new(&data) streams::SparseArray<api::Box>((size_t) owner->basePool->size(),
                                               !owner->superPool);

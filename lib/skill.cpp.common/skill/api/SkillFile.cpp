@@ -3,8 +3,9 @@
 //
 
 #include "SkillFile.h"
-#include "../internal/StringPool.h"
 #include "../fieldTypes/AnnotationType.h"
+#include "../internal/FileWriter.h"
+#include "../streams/FileOutputStream.h"
 
 using namespace skill;
 using namespace api;
@@ -14,7 +15,7 @@ SkillFile::SkillFile(streams::FileInputStream *in, WriteMode mode, StringPool *s
                      fieldTypes::AnnotationType *annotation,
                      std::vector<AbstractStoragePool *> *types, typeByName_t *typesByName)
         : strings(stringPool), annotation(annotation), types(new internal::AbstractStoragePool *[types->size()]),
-          typesByName(typesByName), fromFile(in) {
+          typesByName(typesByName), fromFile(in), mode(mode) {
     for (size_t i = 0; i < types->size(); i++)
         const_cast<AbstractStoragePool **>(this->types)[i] = types->at(i);
 }
@@ -41,4 +42,37 @@ void SkillFile::check() {
                 message << "check failed in " << *p->name << "." << *f->name << std::endl;
                 throw SkillException(message.str());
             }
+}
+
+const std::string &SkillFile::currentPath() {
+    return fromFile->getPath();
+}
+
+
+void SkillFile::changeMode(WriteMode writeMode) {
+    if (mode == writeMode)
+        return;
+    if (readOnly == mode || append == writeMode)
+        throw std::invalid_argument("this file is in write mode");
+
+    mode = writeMode;
+}
+
+
+void SkillFile::flush() {
+    switch (mode) {
+        case write: {
+            FileWriter::write(this, currentPath());
+            break;
+        }
+        case append:
+            break;
+        case readOnly:
+            throw std::invalid_argument("this file is in write mode");
+    }
+}
+
+void SkillFile::close() {
+    flush();
+    changeMode(readOnly);
 }

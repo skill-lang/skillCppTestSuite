@@ -9,6 +9,7 @@
 #include <vector>
 #include <unordered_set>
 #include <mutex>
+#include <future>
 
 #include "../api/StringAccess.h"
 #include "../streams/FileInputStream.h"
@@ -138,9 +139,12 @@ namespace skill {
                 return fieldTypes::V64FieldType::offset(target.string->id);
             }
 
-            virtual void write(outstream &out, api::Box &target) const {
-                SK_TODO;
-                //out.v64(target.string->id);
+            virtual void write(streams::MappedOutStream *out, api::Box &target) const {
+                out->v64(target.string->id);
+            }
+
+            inline void write(streams::MappedOutStream *out, const api::String target) const {
+                out->v64(target->id);
             }
 
             /**
@@ -149,6 +153,14 @@ namespace skill {
             virtual bool requiresDestruction() const {
                 return false;
             }
+
+            /**
+             * prepare the pool and write it to tho stream
+             */
+            void prepareAndWrite(skill::streams::FileOutputStream *out);
+
+        private:
+            void prepareSerialization();
         };
     }
 }

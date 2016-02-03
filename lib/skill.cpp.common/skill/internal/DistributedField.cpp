@@ -113,3 +113,71 @@ DistributedField::~DistributedField() {
 
     }
 }
+
+size_t DistributedField::offset() const {
+    size_t result = 0;
+
+    // compress data
+    SK_TODO;
+#if 0
+    // TODO move next two lines to resetChunks!
+    data ++= newData
+    newData.clear()
+
+    val target = owner.data
+    dataChunks.last match {
+            case c : SimpleChunk =>
+            var i = c.bpo.toInt
+            val high = i + c.count
+            while (i != high) {
+                result += t.offset(data(target(i).asInstanceOf[Obj]))
+                i += 1
+            }
+            case bci : BulkChunk =>
+            val blocks = owner.blocks
+            var blockIndex = 0
+            while (blockIndex < bci.blockCount) {
+                val b = blocks(blockIndex)
+                blockIndex += 1
+                var i = b.bpo
+                val end = i + b.dynamicCount
+                while (i != end) {
+                    result += t.offset(data(target(i).asInstanceOf[Obj]))
+                    i += 1
+                }
+            }
+    }
+#endif
+    return result;
+}
+
+void DistributedField::write(streams::MappedOutStream *out) const {
+    SK_TODO;
+#if 0
+    val target = owner.data
+    dataChunks.last match {
+      case c : SimpleChunk =>
+        var i = c.bpo.toInt
+        val high = i + c.count
+        while (i != high) {
+          t.write(data(target(i).asInstanceOf[Obj]), out)
+          i += 1
+        }
+      case bci : BulkChunk =>
+        val blocks = owner.blocks
+        var blockIndex = 0
+        while (blockIndex < bci.blockCount) {
+          val b = blocks(blockIndex)
+          blockIndex += 1
+          var i = b.bpo
+          val end = i + b.dynamicCount
+          while (i != end) {
+            t.write(data(target(i).asInstanceOf[Obj]), out)
+            i += 1
+          }
+        }
+    }
+#endif
+
+    delete out;
+}

@@ -26,12 +26,23 @@ namespace skill {
     }
     using restrictions::TypeRestriction;
     namespace internal {
+        class FileWriter;
+
+        template<typename T>
+        class BasePool;
+
 /**
  * this class reflects all storage pool properties, that do not depend on types
  *
  * @note let us assume, that the Abstract storage pool is of type T and its base pool is of type B
  */
         class AbstractStoragePool : public fieldTypes::FieldType {
+            friend class FileWriter;
+
+            template<typename T>
+            friend
+            class BasePool;
+
         protected:
             AbstractStoragePool(TypeID typeID, AbstractStoragePool *superPool,
                                 api::String const name, std::set<TypeRestriction *> *restrictions);
@@ -45,6 +56,8 @@ namespace skill {
 
 
             virtual SKilLID newObjectsSize() const = 0;
+
+            virtual void clearNewObjects() = 0;
 
             SKilLID newDynamicInstancesSize() const;
 
@@ -165,12 +178,13 @@ namespace skill {
 
             //! internal use only
             SKilLID cachedSize = 0;
+        private:
+
             /**
              * can be used to fix states, thereby making some operations (dynamic size) cacheable
              *
              * no instances can be added or deleted in a fixed state
              */
-        private:
             bool fixed = false;
 
         public:
@@ -185,17 +199,25 @@ namespace skill {
                 if (setFixed != fixed) {
                     fixed = setFixed;
                     if (fixed) {
-                        SK_TODO;
-                        /*cachedSize = staticSize - deletedCount;
-                        for(auto s : subPools)
+                        cachedSize = staticSize() - deletedCount;
+                        for (auto s : subPools) {
                             s->fix(true);
                             cachedSize += s->cachedSize;
-                        }*/
+                        }
                     } else if (superPool) {
                         superPool->fix(false);
                     }
                 }
             }
+
+        private:
+            //! only implemented by base pools; this is a tribute to lack of wildcards
+            virtual void compress(SKilLID *lbpoMap) = 0;
+
+        protected:
+            void updateAfterCompress(SKilLID *lbpoMap);
+
+        public:
 
             //! internal use only
             SKilLID staticDataInstances = 0;
@@ -203,7 +225,7 @@ namespace skill {
             /**
              * the size of this pool including new object, but excluding subpools
              */
-            SKilLID staticSize() {
+            SKilLID staticSize() const {
                 return staticDataInstances + newObjectsSize();
             }
 
@@ -215,7 +237,7 @@ namespace skill {
             /**
              * the size of this pool, including subpools and new objects
              */
-            SKilLID size() {
+            SKilLID size() const {
                 if (fixed)
                     return cachedSize;
                 else {
@@ -248,8 +270,8 @@ namespace skill {
                 return fieldTypes::V64FieldType::offset(target.annotation->id);
             }
 
-            virtual void write(outstream &out, api::Box &target) const {
-                SK_TODO;
+            virtual void write(streams::MappedOutStream *out, api::Box &target) const {
+                out->v64(target.annotation->id);
             }
 
             /**

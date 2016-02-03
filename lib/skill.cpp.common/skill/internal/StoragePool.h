@@ -70,6 +70,11 @@ namespace skill {
              */
             std::vector<T *> newObjects;
 
+            virtual void clearNewObjects() {
+                staticDataInstances += newObjects.size();
+                newObjects.clear();
+            }
+
             //! static data iterator can traverse over new objects
             friend class iterators::StaticDataIterator<T, B>;
 

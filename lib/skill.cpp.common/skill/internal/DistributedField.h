@@ -21,8 +21,8 @@ namespace skill {
 
         public:
             DistributedField(const FieldType *const type, const api::string_t *name,
-                             AbstractStoragePool *const owner)
-                    : FieldDeclaration(type, name, owner), data(), newData() { }
+                             const TypeID index, AbstractStoragePool *const owner)
+                    : FieldDeclaration(type, name, index, owner), data(), newData() { }
 
             virtual ~DistributedField();
 
@@ -31,6 +31,10 @@ namespace skill {
             virtual void setR(api::Object *i, api::Box v);
 
             virtual void read(const streams::MappedInStream *in, const Chunk *target);
+
+            virtual size_t offset() const;
+
+            virtual void write(streams::MappedOutStream* out) const;
 
             virtual bool check() const;
 

@@ -33,6 +33,7 @@ namespace skill {
         protected:
             ConstantFieldType(T value) : BuiltinFieldType<T, id>(), value(value) { }
 
+        public:
             /**
              * value of the constant
              */
@@ -42,7 +43,7 @@ namespace skill {
                 return 0;
             }
 
-            virtual void write(outstream &out, api::Box &target) const {
+            virtual void write(streams::MappedOutStream *out, api::Box &target) const {
                 // nothing to do
             }
         };
@@ -109,7 +110,7 @@ namespace skill {
         template<typename T, TypeID id,
                 api::Box Read(InStream &)/*,
                 uint64_t Offset(api::Box &target),
-                void Write(outstream &out, api::Box &target)*/>
+                void Write(streams::MappedOutStream *out, api::Box &target)*/>
         struct StatelessFieldType : BuiltinFieldType<T, id> {
             StatelessFieldType() : BuiltinFieldType<T, id>() { }
 
@@ -140,7 +141,7 @@ namespace skill {
                 return size;
             }
 
-            virtual void write(outstream &out, api::Box &target) const {
+            virtual void write(streams::MappedOutStream *out, api::Box &target) const {
                 SK_TODO;
             }
         };
@@ -178,7 +179,7 @@ namespace skill {
                 return offset(target.i64);
             }
 
-            virtual void write(outstream &out, api::Box &target) const {
+            virtual void write(streams::MappedOutStream *out, api::Box &target) const {
                 SK_TODO;
             }
         };
@@ -235,7 +236,7 @@ namespace skill {
                 return rval;
             }
 
-            virtual void write(outstream &out, api::Box &target) const {
+            virtual void write(streams::MappedOutStream *out, api::Box &target) const {
                 SK_TODO;
             }
         };
@@ -261,7 +262,7 @@ namespace skill {
                 return rval;
             }
 
-            virtual void write(outstream &out, api::Box &target) const {
+            virtual void write(streams::MappedOutStream *out, api::Box &target) const {
                 SK_TODO;
             }
         };
@@ -287,7 +288,7 @@ namespace skill {
                 return rval;
             }
 
-            virtual void write(outstream &out, api::Box &target) const {
+            virtual void write(streams::MappedOutStream *out, api::Box &target) const {
                 SK_TODO;
             }
         };
@@ -314,7 +315,7 @@ namespace skill {
                 return rval;
             }
 
-            virtual void write(outstream &out, api::Box &target) const {
+            virtual void write(streams::MappedOutStream *out, api::Box &target) const {
                 SK_TODO;
             }
         };
@@ -361,7 +362,7 @@ namespace skill {
                 return rval;
             }
 
-            virtual void write(outstream &out, api::Box &target) const {
+            virtual void write(streams::MappedOutStream *out, api::Box &target) const {
                 SK_TODO;
             }
 

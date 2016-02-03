@@ -7,6 +7,7 @@
 
 #include "String.h"
 #include "../fieldTypes/BuiltinFieldType.h"
+#include "../streams/FileOutputStream.h"
 
 namespace skill {
     namespace api {

@@ -10,8 +10,13 @@
 namespace skill {
     namespace internal {
         class DistributedField;
+
         class LazyField;
+
         class AbstractStoragePool;
+
+        template<typename T>
+        class BasePool;
     }
     namespace fieldTypes {
         class AnnotationType;
@@ -24,7 +29,13 @@ namespace skill {
          */
         class Object {
             friend class internal::AbstractStoragePool;
+
+            template<typename T>
+            friend
+            class internal::BasePool;
+
             friend class internal::DistributedField;
+
             friend class internal::LazyField;
 
             friend class fieldTypes::AnnotationType;

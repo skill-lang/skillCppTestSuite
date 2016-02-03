@@ -35,7 +35,7 @@ namespace skill {
 
             virtual FieldDeclaration *addField(const AbstractStringKeeper *const keeper,
                                                TypeID id, const FieldType *type, api::String name) {
-                auto rval = new LazyField(type, name, this);
+                auto rval = new LazyField(type, name, (SKilLID)this->dataFields.size() + 1, this);
                 this->dataFields.push_back(rval);
                 return rval;
             }

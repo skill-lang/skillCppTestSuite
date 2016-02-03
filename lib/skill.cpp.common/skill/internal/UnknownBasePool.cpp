@@ -10,7 +10,7 @@ using namespace internal;
 
 FieldDeclaration *UnknownBasePool::addField(const AbstractStringKeeper *const keeper,
                                             TypeID id, const FieldType *type, api::String name) {
-    auto rval = new internal::LazyField(type, name, this);
+    auto rval = new internal::LazyField(type, name, (SKilLID)dataFields.size() + 1, this);
     dataFields.push_back(rval);
     return rval;
 }

@@ -2,110 +2,50 @@
 // Created by Timm Felden on 03.02.16.
 //
 
-#ifndef SKILL_CPP_COMMON_FILEOUTPUTSTREAM_H
-#define SKILL_CPP_COMMON_FILEOUTPUTSTREAM_H
+#ifndef SKILL_CPP_COMMON_MAPPEDOUTSTREAM_H
+#define SKILL_CPP_COMMON_MAPPEDOUTSTREAM_H
 
-#include <string>
-#include <assert.h>
 #include "Stream.h"
 #include "../api/String.h"
 
 namespace skill {
     namespace streams {
 
-        class MappedOutStream;
+        class FileOutputStream;
 
         /**
-         * File out streams manages file; uses a buffer for its write operations.
-         * Can create a map of correct size for mapped streams.
-         *
          * @author Timm Felden
          */
-        class FileOutputStream : public Stream {
+        struct MappedOutStream : public Stream {
+            friend class FileOutputStream;
+
+            MappedOutStream(void *begin, void *end) : Stream(begin, end) { }
+
+            virtual ~MappedOutStream() { }
 
             /**
-             * the path where this stream was opened from
+             * create a clone of this outstream, that is to be deleted by the caller
+             * and that will have virtually ranges between begin and end.
+             * @note DO NOT unmap result
              */
-            const std::string path;
-
-            /**
-             * the file object used for communication to the fs
-             */
-            FILE *const file;
-
-            //! number of bytes written to the file; used for truncation on close
-            size_t bytesWriten;
-
-            /**
-             * flush the buffer
-             */
-            void flush();
-
-            inline void require(size_t i) {
-                if (!has(i))
-                    flush();
+            MappedOutStream *clone(size_t begin, size_t end) const {
+                return new MappedOutStream(position + begin, position + end);
             }
 
-            //! size of the backing buffer
-            static constexpr size_t BUFFER_SIZE = 4096;
-            //! the backing buffer (allocate plain to get rid of one pointer deref)
-            uint8_t buffer[BUFFER_SIZE];
-
-        public:
-
-            /**
-             * open the file at the target location
-             *
-             * @param append set to true, if content shall be appended to the file
-             */
-            FileOutputStream(const std::string &path, bool append);
-
-            /**
-             * close the stream
-             */
-            virtual ~FileOutputStream();
-
-            /**
-             * total file size
-             */
-            size_t fileSize() const noexcept {
-                return bytesWriten;
+            inline void boolean(bool v) {
+                *(position++) = v ? 0xff : 0;
             }
-
-            const std::string &filePath() const noexcept {
-                return path;
-            }
-
-            /**
-            * Maps from current position until offset.
-            *
-            * @return a buffer that has exactly offset many bytes remaining
-            */
-            MappedOutStream *jumpAndMap(long offset);
-
-            /**
-             * Delete a mapping.
-             * This method has to be called for the result of jump and map eventually.
-             * At that point, no clone of the argument stream must be in use.
-             * @note do NOT call this for clones!
-             * @note the argument map will be deleted!
-             * @note clones must be deleted by the cloner
-             */
-            void unmap(MappedOutStream *map);
 
             inline void i8(int8_t v) {
-                require(1);
                 *(position++) = (uint8_t) v;
             }
 
             inline void i16(int16_t v) {
-                require(2);
                 *(position++) = (uint8_t) (v >> 8);
                 *(position++) = (uint8_t) v;
             }
 
             inline void i32(int32_t v) {
-                require(4);
                 *(position++) = (uint8_t) (v >> 24);
                 *(position++) = (uint8_t) (v >> 16);
                 *(position++) = (uint8_t) (v >> 8);
@@ -113,7 +53,6 @@ namespace skill {
             }
 
             inline void i64(int64_t v) {
-                require(8);
                 *(position++) = (uint8_t) (v >> 56);
                 *(position++) = (uint8_t) (v >> 48);
                 *(position++) = (uint8_t) (v >> 40);
@@ -125,7 +64,6 @@ namespace skill {
             }
 
             inline void v64(int64_t v) {
-                require(9);
 
                 if (0L == (v & 0xFFFFFFFFFFFFFF80L)) {
                     *(position++) = (uint8_t) (v);
@@ -169,21 +107,8 @@ namespace skill {
                     }
                 }
             }
-
-            inline void put(const api::string_t *const s) {
-                const auto size = s->size();
-                if (size >= BUFFER_SIZE) {
-                    flush();
-                    fwrite(s->c_str(), 1, size, file);
-                    bytesWriten += size;
-                } else {
-                    require(size);
-                    for (uint8_t c : *s)
-                        *(position++) = c;
-                }
-            }
         };
     }
 }
 
-#endif //SKILL_CPP_COMMON_FILEOUTPUTSTREAM_H
+#endif //SKILL_CPP_COMMON_MAPPEDOUTSTREAM_H

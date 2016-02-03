@@ -85,7 +85,7 @@ namespace skill {
                     return 2;
             }
 
-            virtual void write(outstream &out, api::Box &target) const {
+            virtual void write(streams::MappedOutStream *out, api::Box &target) const {
                 SK_TODO;
             }
 

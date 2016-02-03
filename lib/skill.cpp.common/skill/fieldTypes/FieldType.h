@@ -8,10 +8,13 @@
 #include "../common.h"
 #include "../streams/MappedInStream.h"
 #include "../api/Box.h"
-
-typedef int outstream;
+#include "../streams/MappedOutStream.h"
 
 namespace skill {
+    namespace streams {
+        class MappedOutStream;
+    }
+
     /**
      * this namespace contains field type information used by skill
      */
@@ -46,7 +49,7 @@ namespace skill {
             /**
              * write a box to a stream
              */
-            virtual void write(outstream &out, api::Box &target) const = 0;
+            virtual void write(streams::MappedOutStream *out, api::Box &target) const = 0;
 
             /**
              * @return if true, then the object pointed to is to be deleted,

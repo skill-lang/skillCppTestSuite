@@ -61,11 +61,16 @@ namespace skill {
              */
             streams::FileInputStream *const fromFile;
 
+            /**
+             * current mode of this file
+             */
+            WriteMode mode;
+
             SkillFile(streams::FileInputStream *in,
                       WriteMode mode,
                       internal::StringPool *stringPool,
                       fieldTypes::AnnotationType *annotation,
-                      std::vector<internal::AbstractStoragePool*> *types,
+                      std::vector<internal::AbstractStoragePool *> *types,
                       typeByName_t *typesByName);
 
         public:
@@ -113,12 +118,12 @@ namespace skill {
              * @throws SkillException
              *             if check fails
              */
-            void flush() { };
+            void flush();
 
             /**
-             * Same as flush, but will also sync and close file, thus the state must not be used afterwards.
+             * Same as flush, changeMode(readOnly).
              */
-            void close() { };
+            void close();
 
             /**
              * start iteration over types in the state

@@ -22,6 +22,9 @@ namespace skill {
             SubPool(TypeID typeID, AbstractStoragePool *superPool, const api::string_t *name,
                     std::set<TypeRestriction *> *restrictions)
                     : StoragePool<T, B>(typeID, superPool, name, restrictions) { }
+
+            //! must not be called
+            virtual void compress(SKilLID *lbpoMap) { assert(false); }
         };
     }
 }

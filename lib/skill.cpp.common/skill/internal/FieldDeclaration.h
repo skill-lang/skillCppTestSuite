@@ -8,8 +8,10 @@
 #include "FileStructure.h"
 #include "../api/AbstractField.h"
 #include "../restrictions/FieldRestriction.h"
+#include "../concurrent/ThreadPool.h"
 #include <vector>
 #include <unordered_set>
+#include <future>
 
 namespace skill {
     namespace internal {
@@ -21,14 +23,17 @@ namespace skill {
          */
         class FieldDeclaration : public api::AbstractField {
         public:
+            //! skill field index
+            const TypeID index;
+
             /**
              * reflective access to the enclosing type
              */
             AbstractStoragePool *const owner;
         protected:
-            FieldDeclaration(const FieldType *const type, api::String const name,
+            FieldDeclaration(const FieldType *const type, api::String const name, const TypeID index,
                              AbstractStoragePool *const owner)
-                    : AbstractField(type, name), owner(owner) { }
+                    : AbstractField(type, name), index(index), owner(owner) { }
 
             inline SkillException ParseException(long position, long begin, long end, const std::string &msg) {
                 std::stringstream message;
@@ -48,12 +53,26 @@ namespace skill {
                 dataChunks.push_back(c);
             }
 
+            virtual void resetChunks(SKilLID newSize) {
+                for (auto c : dataChunks)
+                    delete c;
+                dataChunks.clear();
+                dataChunks.push_back(new BulkChunk(-1, -1, newSize, 1));
+            }
+
             /**
              * Restriction handling.
              */
         protected:
             std::unordered_set<const restrictions::CheckableRestriction *> checkedRestrictions;
             std::unordered_set<const restrictions::FieldRestriction *> otherRestrictions;
+
+            virtual size_t offset() const = 0;
+
+            std::future<size_t> offsetResult;
+
+            virtual void write(streams::MappedOutStream *out) const = 0;
+
         public:
             void addRestriction(const restrictions::FieldRestriction *r);
 
@@ -69,6 +88,26 @@ namespace skill {
              * construction and done massively in parallel.
              */
             virtual void read(const streams::MappedInStream *in, const Chunk *target) = 0;
+
+            //! start offset calculation
+            void asyncOffset() {
+                offsetResult = concurrent::ThreadPool::global.execute([this]() {
+                    return this->offset();
+                });
+            }
+
+            //! await result of offset calculation
+            size_t awaitOffset() {
+                return offsetResult.get();
+            }
+
+            //! start write job
+            std::future<void> asyncWrite(const streams::MappedOutStream *map) {
+                return concurrent::ThreadPool::global.execute([this](const streams::MappedOutStream *map) {
+                    Chunk *c = dataChunks.back();
+                    return this->write(map->clone(c->begin, c->end));
+                }, map);
+            }
         };
     }
 }

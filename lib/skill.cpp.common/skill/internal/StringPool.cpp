@@ -40,3 +40,39 @@ String internal::StringPool::addLiteral(const char *target) {
     knownStrings.insert(result);
     return result;
 }
+
+void internal::StringPool::prepareAndWrite(skill::streams::FileOutputStream *out) {
+    prepareSerialization();
+
+    // Insert new strings to the map;
+    // this is where duplications with lazy strings will be detected and eliminated
+    for (auto s : knownStrings) {
+        if (-1 == s->id) {
+            const_cast<api::string_t *>(s)->id = (SKilLID) idMap.size();
+            idMap.push_back(s);
+        }
+    }
+
+    const int64_t count = idMap.size() - 1;
+    // write block, if nonempty
+    if (count) {
+        auto table = out->jumpAndMap(fieldTypes::V64FieldType::offset(count) + 4 * count);
+        table->v64(count);
+        int off = 0;
+        for(int i = 1; i <= count; i++){
+            const auto data = idMap[i];
+            off += data->length();
+            table->i32(off);
+            out->put(data);
+        }
+        out->unmap(table);
+    } else {
+        out->i8(0);
+    }
+}
+
+void internal::StringPool::prepareSerialization() {
+    // ensure all strings are present
+    for (auto i = stringPositions.size() - 1; i != 0; i--)
+        get(i);
+}

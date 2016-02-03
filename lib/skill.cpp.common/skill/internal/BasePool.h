@@ -26,6 +26,31 @@ namespace skill {
 
             BasePool(TypeID typeID, const api::string_t *name, std::set<TypeRestriction *> *restrictions)
                     : StoragePool<T, T>(typeID, nullptr, name, restrictions) { }
+
+            virtual void compress(SKilLID *lbpoMap) {
+                // create our part of the lbpo map
+                SKilLID next = 0;
+                for (const auto &p : iterators::TypeHierarchyIterator(this)) {
+                    lbpoMap[p.poolOffset()] = next;
+                    next += p.staticSize() - p.deletedCount;
+                }
+
+                auto tmp = this->data;
+                allocateData();
+                auto d = this->data;
+                this->data = tmp;
+                SKilLID id = 1;
+                for (T &i : this->allInTypeOrder()) {
+                    if (0 != i.id) {
+                        d[id] = &i;
+                        i.id = id;
+                        id++;
+                    }
+                }
+                delete[] (1 + this->data);
+                this->data = d;
+                this->updateAfterCompress(lbpoMap);
+            }
         };
     }
 }

@@ -21,13 +21,16 @@ namespace skill {
 
         public:
             LazyField(const FieldType *const type, const api::string_t *name,
-                      AbstractStoragePool *const owner)
-                    : DistributedField(type, name, owner),
+                      const TypeID index, AbstractStoragePool *const owner)
+                    : DistributedField(type, name, index, owner),
                       parts(new std::map<const Chunk *, streams::MappedInStream *>) { }
 
             virtual ~LazyField();
 
-            inline void ensureIsLoaded();
+            inline void ensureIsLoaded() {
+                if (!isLoaded())
+                    load();
+            }
 
             virtual api::Box getR(const api::Object *i);
 
