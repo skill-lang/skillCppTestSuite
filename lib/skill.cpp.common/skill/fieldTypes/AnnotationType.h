@@ -63,7 +63,7 @@ namespace skill {
              *
              * @note intended for internal use
              */
-            internal::AbstractStoragePool *type(const char *name) {
+            internal::AbstractStoragePool *type(const char *name) const {
                 return typesByName[name];
             }
 

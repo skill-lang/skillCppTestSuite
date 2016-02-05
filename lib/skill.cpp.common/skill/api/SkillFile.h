@@ -41,6 +41,13 @@ namespace skill {
             api::StringAccess *const strings;
         protected:
             fieldTypes::AnnotationType *const annotation;
+        public :
+            const fieldTypes::AnnotationType *const getAnnotationType() const {
+                return annotation;
+            }
+
+        protected:
+
 
             /**
              * types managed by this file.

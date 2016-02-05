@@ -56,3 +56,8 @@ void AbstractStoragePool::updateAfterCompress(SKilLID *lbpoMap) {
 
     clearNewObjects();
 }
+
+void AbstractStoragePool::complete(SkillFile *owner) {
+    this->owner = owner;
+    // valid if there are no known pools
+}

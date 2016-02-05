@@ -106,6 +106,14 @@ namespace skill {
                 return get(id);
             }
 
+            template <class... Args>
+            T* add(Args &&... args) {
+                T* rval = book->next();
+                new(rval) T(-1, std::forward<Args>(args)...);
+                this->newObjects.push_back(rval);
+                return rval;
+            }
+
             virtual std::unique_ptr<iterators::AllObjectIterator> allObjects() const {
                 return std::unique_ptr<iterators::AllObjectIterator>(
                         new iterators::AllObjectIterator::Implementation<T, B>(all()));

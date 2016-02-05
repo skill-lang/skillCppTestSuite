@@ -36,7 +36,7 @@ TEST(AgeReadTest, ReadAgeForachAPI) {
 TEST(AgeReadTest, ReadAgeCheckTypes) {
     auto sf = std::unique_ptr<SkillFile>(
             SkillFile::open("../../src/test/resources/genbinary/[[empty]]/accept/ageUnrestricted.sf"));
-    ASSERT_EQ(1, sf->size());
+    ASSERT_EQ(1, (int)sf->size());
     for (auto t : *sf) {
         ASSERT_EQ(((age::StringKeeper *) ((skill::internal::StringPool *) sf->strings)->keeper)->age,
                   t->name);
@@ -46,7 +46,7 @@ TEST(AgeReadTest, ReadAgeCheckTypes) {
 TEST(AgeReadTest, ReadAgeCheckInstanceOrder) {
     auto sf = std::unique_ptr<SkillFile>(
             SkillFile::open("../../src/test/resources/genbinary/[[empty]]/accept/ageUnrestricted.sf"));
-    ASSERT_EQ(1, sf->size());
+    ASSERT_EQ(1, (int)sf->size());
     auto as = sf->Age->allInTypeOrder();
     for (skill::SKilLID i = 1; i <= sf->Age->size(); i++) {
         ASSERT_EQ(as.next()->skillID(), i);
@@ -68,7 +68,7 @@ TEST(AgeReadTest, CheckLBPOTypeHierarchyOrder) {
 
     auto sf = std::unique_ptr<SkillFile>(
             SkillFile::open("../../src/test/resources/genbinary/[[empty]]/accept/localBasePoolOffset.sf"));
-    ASSERT_EQ(5, sf->size());
+    ASSERT_EQ(5, (int)sf->size());
     for (auto t : *sf) {
         checkType(t, "a", "abdc");
         checkType(t, "b", "bd");
@@ -95,7 +95,7 @@ TEST(AgeReadTest, ReadLBPOCheckTypeOrder) {
 
     auto sf = std::unique_ptr<SkillFile>(
             SkillFile::open("../../src/test/resources/genbinary/[[empty]]/accept/localBasePoolOffset.sf"));
-    ASSERT_EQ(5, sf->size());
+    ASSERT_EQ(5, (int)sf->size());
     for (auto t : *sf) {
         checkType(t, "a", "aaabbbbbdddcc");
         checkType(t, "b", "bbbbbddd");
@@ -121,7 +121,7 @@ TEST(AgeReadTest, ReadLBPOCheckStaticInstances) {
 
     auto sf = std::unique_ptr<SkillFile>(
             SkillFile::open("../../src/test/resources/genbinary/[[empty]]/accept/localBasePoolOffset.sf"));
-    ASSERT_EQ(5, sf->size());
+    ASSERT_EQ(5, (int)sf->size());
     for (auto t : *sf) {
         checkType(t, "a", "\x01\x02\x0B");
         checkType(t, "b", "\x03\x04\x05\x07\x08");
@@ -148,7 +148,7 @@ TEST(AgeReadTest, ReadLBPOCheckAllocationOrder) {
 
     auto sf = std::unique_ptr<SkillFile>(
             SkillFile::open("../../src/test/resources/genbinary/[[empty]]/accept/localBasePoolOffset.sf"));
-    ASSERT_EQ(5, sf->size());
+    ASSERT_EQ(5, (int)sf->size());
     for (auto t : *sf) {
         checkType(t, "a", "aabbbcbbddadc");
         checkType(t, "b", "bbbbbddd");
@@ -161,7 +161,7 @@ TEST(AgeReadTest, ReadDate) {
     auto sf = std::unique_ptr<SkillFile>(
             SkillFile::open("../../src/test/resources/genbinary/[[empty]]/accept/date.sf"));
     ASSERT_NE(nullptr, sf->Age);
-    ASSERT_EQ(0, sf->Age->size());
+    ASSERT_EQ(0, (int)sf->Age->size());
     for (auto i = sf->Age->size(); i > 0; i--) {
         sf->Age->get(i);
     }

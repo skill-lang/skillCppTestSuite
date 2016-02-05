@@ -35,7 +35,7 @@ namespace skill {
             /**
              * open the file at the target location
              */
-            FileInputStream(const std::string path);
+            FileInputStream(const std::string path, const char *openMode = "r");
 
             /**
              * close the stream

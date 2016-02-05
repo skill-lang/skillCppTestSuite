@@ -12,10 +12,13 @@ FileInputStream::FileInputStream(void *begin, void *end, const std::string &path
         : InStream(begin, end), path(path), file(file) {
 }
 
-FileInputStream::FileInputStream(const std::string path)
-        : InStream(nullptr, nullptr), path(path), file(fopen(path.c_str(), "r")) {
+FileInputStream::FileInputStream(const std::string path, const char *openMode)
+        : InStream(nullptr, nullptr), path(path), file(fopen(path.c_str(), openMode)) {
     if (nullptr == file)
         throw SkillException(std::string("could not open file ") + path);
+
+    if (openMode[0] != 'r')
+        return; // do not perform any operations on a file that is not used anyway
 
     FILE *stream = (FILE *) file;
 

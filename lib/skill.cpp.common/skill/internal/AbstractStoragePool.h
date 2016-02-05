@@ -167,6 +167,12 @@ namespace skill {
                     nextPool = nx;
             }
 
+        protected:
+            SkillFile *owner;
+
+            //! called in owner constructor to complete creation of this pool
+            virtual void complete(SkillFile *owner);
+
         public:
 
             /**

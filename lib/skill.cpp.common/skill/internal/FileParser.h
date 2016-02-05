@@ -102,7 +102,7 @@ namespace skill {
 
 
         /**
-         * parses a skill file; parametrized by specification dependent functionality.
+         * create a new empty skill file; parametrized by specification dependent functionality.
          */
         template<
                 //!ensures that names of pools and known fields are known upfront, so that it is safe
@@ -125,6 +125,48 @@ namespace skill {
                                      api::typeByName_t *typesByName,
                                      std::vector<std::unique_ptr<MappedInStream>> &dataList)
         >
+        SkillFile *newFile(const std::string &path, WriteMode mode) {
+            FileInputStream *in = new FileInputStream(path, "w");
+            StringPool *String = initializeStrings(in);
+            std::vector<AbstractStoragePool *> *types =
+                    new std::vector<AbstractStoragePool *>;
+            AnnotationType *Annotation = new AnnotationType(types);
+            api::typeByName_t *typesByName = new api::typeByName_t;
+            std::vector<std::unique_ptr<MappedInStream>> dataList;
+
+            return makeState(in, mode, String,
+                             Annotation, types,
+                             typesByName,
+                             dataList);
+        }
+
+
+        /**
+         * parses a skill file; parametrized by specification dependent functionality.
+         */
+        template<
+                //!ensures that names of pools and known fields are known upfront, so that it is safe
+                // to compare their names by pointer value
+                StringPool *initializeStrings(FileInputStream *),
+
+                //!create a new pool in the target type system
+                AbstractStoragePool *newPool(TypeID typeID,
+                String name,
+                AbstractStoragePool *superPool,
+                std::set<TypeRestriction *> *restrictions,
+                const AbstractStringKeeper *const keeper ),
+
+        //! create a new state in the target type system
+        SkillFile *makeState(FileInputStream *in,
+                             WriteMode mode,
+                             StringPool *String,
+                             AnnotationType *Annotation,
+                             std::vector<AbstractStoragePool *> *types,
+                             api::typeByName_t *typesByName,
+                             std::vector<std::unique_ptr<MappedInStream>> &dataList)
+
+        >
+
         SkillFile *parseFile(std::unique_ptr<FileInputStream> in, WriteMode mode) {
             struct LFEntry {
                 LFEntry(AbstractStoragePool *const pool, SKilLID count)
