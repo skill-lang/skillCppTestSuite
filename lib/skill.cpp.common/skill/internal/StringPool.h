@@ -139,6 +139,10 @@ namespace skill {
                 return fieldTypes::V64FieldType::offset(target.string->id);
             }
 
+            inline uint64_t offset(const api::String &target) const {
+                return fieldTypes::V64FieldType::offset(target->id);
+            }
+
             virtual void write(streams::MappedOutStream *out, api::Box &target) const {
                 out->v64(target.string->id);
             }

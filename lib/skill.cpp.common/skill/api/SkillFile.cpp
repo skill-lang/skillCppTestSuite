@@ -19,7 +19,6 @@ SkillFile::SkillFile(streams::FileInputStream *in, WriteMode mode, StringPool *s
     for (size_t i = 0; i < types->size(); i++) {
         auto t = types->at(i);
         const_cast<AbstractStoragePool **>(this->types)[i] = t;
-        t->complete(this);
     }
 }
 

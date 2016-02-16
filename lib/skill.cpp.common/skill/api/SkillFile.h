@@ -80,6 +80,11 @@ namespace skill {
                       std::vector<internal::AbstractStoragePool *> *types,
                       typeByName_t *typesByName);
 
+            void ensureFields() {
+                for (auto t : *this)
+                    t->complete(this);
+            }
+
         public:
             /**
              * Will release resources of this file, but will *NOT* write changes to disk!

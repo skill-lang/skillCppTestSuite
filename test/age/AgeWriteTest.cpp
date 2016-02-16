@@ -27,6 +27,8 @@ TEST(AgeWriteTest, WriteAge) {
         ASSERT_EQ(28, sf2->Age->get(2)->getAge());
     } catch (std::exception &e) {
         GTEST_FAIL() << "std::exception: " << e.what();
+    } catch (skill::SkillException e) {
+        GTEST_FAIL() << "unexpected failure: " << e.message;
     } catch (...) {
         GTEST_FAIL() << "unexpected exception";
     }

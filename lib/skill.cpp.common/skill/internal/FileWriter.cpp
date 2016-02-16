@@ -39,8 +39,8 @@ void FileWriter::write(api::SkillFile *state, const std::string &path) {
         for (FieldDeclaration *f : t->dataFields) {
             if (dynamic_cast<LazyField *>(f)) {
                 ((LazyField *) f)->ensureIsLoaded();
-                fieldQueue.push_back(f);
             }
+            fieldQueue.push_back(f);
         }
     }
 
@@ -194,6 +194,6 @@ void FileWriter::writeFieldData(SkillFile *state, streams::FileOutputStream &out
         t->fix(false);
 
     // await jobs
-    for (auto& j : jobs)
+    for (auto &j : jobs)
         j.get();
 }

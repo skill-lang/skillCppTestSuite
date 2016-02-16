@@ -107,6 +107,24 @@ namespace skill {
                     }
                 }
             }
+
+            inline void f32(float v) {
+                register union {
+                    uint32_t i;
+                    float f;
+                } tmp;
+                tmp.f = v;
+                i32(tmp.i);
+            }
+
+            inline void f64(double v) {
+                register union {
+                    uint64_t i;
+                    double f;
+                } tmp;
+                tmp.f = v;
+                i64(tmp.i);
+            }
         };
     }
 }
