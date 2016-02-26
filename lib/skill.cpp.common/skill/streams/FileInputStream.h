@@ -18,7 +18,7 @@ namespace skill {
             /**
              * the path where this stream was opened from
              */
-            const std::string path;
+            const std::string* const path;
 
             /**
              * the file object used for communication to the fs
@@ -28,14 +28,14 @@ namespace skill {
             /**
              * required for replacing begin and end after map
              */
-            FileInputStream(void *begin, void *end, const std::string &path, const FILE *file);
+            FileInputStream(void *begin, void *end, const std::string* path, const FILE *file);
 
         public:
 
             /**
              * open the file at the target location
              */
-            FileInputStream(const std::string path, const char *openMode = "r");
+            FileInputStream(const std::string& path, const char *openMode = "r");
 
             /**
              * close the stream
@@ -46,7 +46,7 @@ namespace skill {
              * tell the caller which file we belong to
              */
             const std::string &getPath() {
-                return path;
+                return *path;
             }
 
             /**

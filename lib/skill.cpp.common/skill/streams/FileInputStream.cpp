@@ -8,19 +8,20 @@
 
 using namespace skill::streams;
 
-FileInputStream::FileInputStream(void *begin, void *end, const std::string &path, const FILE *file)
+FileInputStream::FileInputStream(void *begin, void *end, const std::string* path, const FILE *file)
         : InStream(begin, end), path(path), file(file) {
 }
 
-FileInputStream::FileInputStream(const std::string path, const char *openMode)
-        : InStream(nullptr, nullptr), path(path), file(fopen(path.c_str(), openMode)) {
-    if (nullptr == file)
+
+FileInputStream::FileInputStream(const std::string& path, const char *openMode)
+        : InStream(nullptr, nullptr), path(new std::string(path)), file(nullptr) {
+    FILE *stream = fopen(path.c_str(), openMode);
+
+    if (nullptr == stream)
         throw SkillException(std::string("could not open file ") + path);
 
     if (openMode[0] != 'r')
         return; // do not perform any operations on a file that is not used anyway
-
-    FILE *stream = (FILE *) file;
 
     struct stat fileStat;
     if (-1 == fstat(fileno(stream), &fileStat))
@@ -42,7 +43,7 @@ FileInputStream::FileInputStream(const std::string path, const char *openMode)
         throw SkillException("Execution of function madvise failed.");
 
     // set begin and end
-    new(this) FileInputStream(base, end, path, file);
+    new(this) FileInputStream(base, end, this->path, stream);
 }
 
 FileInputStream::~FileInputStream() {

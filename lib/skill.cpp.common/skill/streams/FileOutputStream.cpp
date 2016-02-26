@@ -8,11 +8,14 @@
 #include <string.h>
 #include "FileOutputStream.h"
 #include "MappedOutStream.h"
+#include "../api/SkillException.h"
 
 skill::streams::FileOutputStream::FileOutputStream(const std::string &path, bool append)
         : Stream(&buffer, (void *) (((long) &buffer) + BUFFER_SIZE)),
           path(path), file(fopen(path.c_str(), append ? "ra+" : "w+")),
           bytesWriten(0) {
+    if (nullptr == file)
+        throw SkillException(std::string("could not open file ") + path);
 }
 
 skill::streams::FileOutputStream::~FileOutputStream() {
