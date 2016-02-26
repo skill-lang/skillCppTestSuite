@@ -23,7 +23,7 @@ namespace skill {
 
             T *currentPage;
             /**
-             * we need remaining and next index, because pages can have variable size
+             * we don't need an index, because we will only have a variable page size for the first page
              */
             int currentPageRemaining;
 
@@ -72,6 +72,7 @@ namespace skill {
                 } else {
                     // we have to allocate a new page
                     currentPage = new T[defaultPageSize];
+                    pages.push_back(currentPage);
                     // return first object
                     currentPageRemaining = defaultPageSize - 1;
                     return currentPage;

@@ -22,6 +22,8 @@ namespace skill {
          * Like second phase of dynamic data iterator.
          *
          * @author Timm Felden
+         *
+         * @note apparently, this implementation is completely broken; see ada for correct one
          */
         template<class T, class B>
         class DynamicNewInstancesIterator :
@@ -39,7 +41,6 @@ namespace skill {
                 while (ts.hasNext()) {
                     const StoragePool<T, B> *t = (const StoragePool<T, B> *) ts.next();
                     if (t->newObjects.size() != 0) {
-                        index = 0;
                         end = t->newObjects.size();
                         break;
                     }
