@@ -497,7 +497,7 @@ namespace skill {
         inline void triggerFieldDeserialization(std::vector<AbstractStoragePool *> *types,
                                                 std::vector<std::unique_ptr<MappedInStream>> &dataList) {
 
-            std::vector<std::future<std::string *>> results;
+            //std::vector<std::future<std::string *>> results;
 
             // stack-local thread pool als alternative zu barrier; thread::yield!
             for (auto t : *types) {
@@ -514,7 +514,8 @@ namespace skill {
                         if (dc->count) {
                             //   barrier.begin
                             MappedInStream *in = dataList[blockIndex].get();
-                            results.push_back(concurrent::ThreadPool::global.execute(
+                            f->read(in, dc);
+                            /*results.push_back(concurrent::ThreadPool::global.execute(
                                     [](FieldDeclaration *f, MappedInStream *in, Chunk *dc) -> std::string * {
                                         try {
                                             f->read(in, dc);
@@ -524,13 +525,13 @@ namespace skill {
                                             return new std::string("unknown error in concurrent read");
                                         }
                                         return nullptr;
-                                    }, f, in, dc));
+                                    }, f, in, dc));*/
                         }
                     }
                 }
             }
 
-            bool failed = false;
+            /*bool failed = false;
             for (auto &r : results)
                 if (nullptr != r.get())
                     failed = true;
@@ -547,7 +548,7 @@ namespace skill {
                     }
                 }
                 throw SkillException(msg.str());
-            }
+            }*/
         }
     }
 }

@@ -2,7 +2,8 @@
 // Created by Timm Felden on 22.01.16.
 //
 
-#ifndef SKILL_CPP_COMMON_THREADPOOL_H
+#if 0 // disable thread pools because the seem to cause errors
+//#ifndef SKILL_CPP_COMMON_THREADPOOL_H
 #define SKILL_CPP_COMMON_THREADPOOL_H
 
 #include <vector>

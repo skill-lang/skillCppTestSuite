@@ -8,6 +8,7 @@
 
 using namespace skill::streams;
 
+
 FileInputStream::FileInputStream(void *begin, void *end, const std::string* path, const FILE *file)
         : InStream(begin, end), path(path), file(file) {
 }

@@ -66,11 +66,14 @@ namespace skill {
         protected:
             std::unordered_set<const restrictions::CheckableRestriction *> checkedRestrictions;
             std::unordered_set<const restrictions::FieldRestriction *> otherRestrictions;
-
+        public:
             virtual size_t offset() const = 0;
 
-            std::future<size_t> offsetResult;
-
+            //std::future<size_t> offsetResult;
+            // offset cache for now
+            // TODO replace by fixed async code
+            size_t awaitOffset;
+        //protected:
             virtual void write(streams::MappedOutStream *out) const = 0;
 
         public:
@@ -90,7 +93,7 @@ namespace skill {
             virtual void read(const streams::MappedInStream *in, const Chunk *target) = 0;
 
             //! start offset calculation
-            void asyncOffset() {
+            /*void asyncOffset() {
                 offsetResult = concurrent::ThreadPool::global.execute([this]() {
                     return this->offset();
                 });
@@ -99,15 +102,15 @@ namespace skill {
             //! await result of offset calculation
             size_t awaitOffset() {
                 return offsetResult.get();
-            }
+            }*/
 
             //! start write job
-            std::future<void> asyncWrite(const streams::MappedOutStream *map) {
+            /*std::future<void> asyncWrite(const streams::MappedOutStream *map) {
                 return concurrent::ThreadPool::global.execute([this](const streams::MappedOutStream *map) {
                     Chunk *c = dataChunks.back();
                     return this->write(map->clone(c->begin, c->end));
                 }, map);
-            }
+            }*/
         };
     }
 }

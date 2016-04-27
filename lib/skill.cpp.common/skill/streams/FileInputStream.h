@@ -18,7 +18,7 @@ namespace skill {
             /**
              * the path where this stream was opened from
              */
-            const std::string* const path;
+            const std::string *const path;
 
             /**
              * the file object used for communication to the fs
@@ -28,7 +28,7 @@ namespace skill {
             /**
              * required for replacing begin and end after map
              */
-            FileInputStream(void *begin, void *end, const std::string* path, const FILE *file);
+            FileInputStream(void *begin, void *end, const std::string *path, const FILE *file);
 
         public:
 

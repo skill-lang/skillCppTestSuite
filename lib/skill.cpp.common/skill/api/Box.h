@@ -6,7 +6,7 @@
 #define SKILL_CPP_COMMON_BOX_H
 
 #include <cstdint>
-#include <type_traits>
+#include <functional>
 #include "String.h"
 #include "Object.h"
 
@@ -39,6 +39,14 @@ namespace skill {
             BoxedMap *map;
             Object *annotation;
         };
+
+
+        template<typename T>
+        inline Box box(const T x){
+            Box r;
+            r.annotation = reinterpret_cast<Object*>(x);
+            return r;
+        }
 
         // required by reflection
         inline Box box(const Box x) {
@@ -93,39 +101,9 @@ namespace skill {
             return r;
         }
 
-        inline Box box(BoxedArray *const x) {
-            Box r;
-            r.array = x;
-            return r;
-        }
-
-        inline Box box(BoxedSet *x) {
-            Box r;
-            r.set = x;
-            return r;
-        }
-
-        inline Box box(BoxedMap *x) {
-            Box r;
-            r.map = x;
-            return r;
-        }
-
-        inline Box box(Object *x) {
-            Box r;
-            r.annotation = x;
-            return r;
-        }
-
         template<typename T>
         inline T unbox(const Box &b) {
-
-            //! project T onto a boxed map type, if more concrete
-            typedef typename std::conditional<std::is_assignable<BoxedMap *, T>::value,
-                    BoxedMap *,
-                    T>::type flat;
-
-            return unbox<flat>(b);
+            return reinterpret_cast<T>(b.annotation);
         }
 
         template<>
@@ -168,28 +146,25 @@ namespace skill {
             return b.f64;
         }
 
-        template<>
-        inline BoxedArray *unbox(const Box &b) {
-            return b.array;
-        }
-
-        template<>
-        inline BoxedSet *unbox(const Box &b) {
-            return b.set;
-        }
-
-        template<>
-        inline BoxedMap *unbox(const Box &b) {
-            return b.map;
-        }
-
         inline bool operator<(const Box l, const Box r) {
             return l.i64 < r.i64;
+        }
+
+        inline bool operator==(const Box l, const Box r) {
+            return l.i64 == r.i64;
         }
 
         static_assert(sizeof(Box) == sizeof(int64_t),
                       "I exepct Box and void* to have the same size and a similar behaviour");
     }
+}
+namespace std {
+    template<>
+    struct hash<skill::api::Box> {
+        size_t operator()(const skill::api::Box &b) const noexcept {
+            return std::hash<int64_t>()(b.i64);
+        }
+    };
 }
 
 #endif //SKILL_CPP_COMMON_BOX_H

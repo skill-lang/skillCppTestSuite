@@ -59,7 +59,7 @@ namespace skill {
             }
 
             virtual void update(size_t i, Box v) {
-                this->at(i) = unbox<T>(v);
+                (*this)[i] = unbox<T>(v);
             }
 
             virtual size_t length() const {

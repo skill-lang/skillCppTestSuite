@@ -27,6 +27,12 @@ namespace skill {
          */
         struct BoxedMap {
 
+            operator Box() {
+                Box r;
+                r.map = this;
+                return r;
+            }
+
             virtual ~BoxedMap() { }
 
             /**
@@ -85,6 +91,12 @@ namespace skill {
 
 
         public:
+
+            operator Box() {
+                Box r;
+                r.map = this;
+                return r;
+            }
 
             Map() : std::map<K, V>() { }
 

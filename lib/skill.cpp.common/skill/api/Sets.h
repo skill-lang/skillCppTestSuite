@@ -5,7 +5,7 @@
 #ifndef SKILL_CPP_COMMON_API_SET_H
 #define SKILL_CPP_COMMON_API_SET_H
 
-#include <set>
+#include <unordered_set>
 #include <memory>
 #include "Box.h"
 
@@ -41,22 +41,22 @@ namespace skill {
 
             virtual size_t length() const = 0;
 
-            virtual std::unique_ptr<SetIterator> all() const = 0;
+            virtual std::unique_ptr<SetIterator> all() = 0;
         };
 
         /**
          * Actual representation of skill sets.
          */
         template<typename T>
-        class Set : public std::set<T>, public BoxedSet {
-            typedef typename std::set<T>::iterator iter;
+        class Set : public std::unordered_set<T>, public BoxedSet {
+            typedef typename std::unordered_set<T>::iterator iter;
 
             class BoxedIterator : public SetIterator {
                 iter state;
                 const iter last;
 
             public:
-                BoxedIterator(const Set *self) : state(self->begin()), last(self->end()) { }
+                BoxedIterator(Set *self) : state(self->begin()), last(self->end()) { }
 
                 virtual bool hasNext() const {
                     return state != last;
@@ -69,7 +69,7 @@ namespace skill {
 
         public:
 
-            Set() : std::set<T>() { }
+            Set() : std::unordered_set<T>() { }
 
             virtual ~Set() { };
 
@@ -85,7 +85,7 @@ namespace skill {
                 return this->size();
             }
 
-            virtual std::unique_ptr<SetIterator> all() const {
+            virtual std::unique_ptr<SetIterator> all() {
                 return std::unique_ptr<SetIterator>(new BoxedIterator(this));
             }
         };

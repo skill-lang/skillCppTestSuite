@@ -4,7 +4,7 @@
 
 #include "ThreadPool.h"
 #include <iostream>
-
+#if 0
 using namespace skill::concurrent;
 
 ThreadPool ThreadPool::global;
@@ -51,3 +51,4 @@ ThreadPool::~ThreadPool() {
     for (std::thread &worker: workers)
         worker.join();
 }
+#endif

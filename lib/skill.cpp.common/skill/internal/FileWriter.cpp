@@ -69,8 +69,10 @@ void FileWriter::write(api::SkillFile *state, const std::string &path) {
 
     // Calculate Offsets
     // @note this has to happen after string IDs have been updated
-    for (FieldDeclaration *f : fieldQueue)
-        f->asyncOffset();
+    for (FieldDeclaration *f : fieldQueue) {
+        f->awaitOffset = f->offset();
+        //f->asyncOffset();
+    }
 
     // write count of the type block
     out.v64(state->size());
@@ -101,7 +103,7 @@ void FileWriter::write(api::SkillFile *state, const std::string &path) {
         out.v64(f->name->getID());
         writeType(f->type, out);
         restrictions(f, out);
-        endOffset = offset + f->awaitOffset();
+        endOffset = offset + f->awaitOffset;
         out.v64(endOffset);
 
         // update chunks and prepare write data
@@ -183,7 +185,7 @@ void FileWriter::writeFieldData(SkillFile *state, streams::FileOutputStream &out
     // write field data
     std::vector<std::future<void>> jobs;
     for (FieldDeclaration *f : fields)
-        jobs.push_back(f->asyncWrite(map));
+        f->write(map);
 
     ///////////////////////
     // PHASE 4: Cleaning //

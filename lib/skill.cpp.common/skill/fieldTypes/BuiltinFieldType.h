@@ -221,6 +221,14 @@ namespace skill {
             ConstantLengthArray(int64_t length, const FieldType *const base)
                     : SingleBaseTypeContainer<api::Box *, 15>(base), length((size_t) length) { }
 
+            template<typename T>
+            api::Array<T> *read(streams::MappedInStream &in) const {
+                api::Array<T> *r = new api::Array<T>(length);
+                for (size_t i = 0; i < length; i++)
+                    r->update(i, this->base->read(in));
+                return r;
+            }
+
             virtual api::Box read(streams::MappedInStream &in) const {
                 api::Box r;
                 r.array = new api::Array<api::Box>(length);
@@ -245,6 +253,16 @@ namespace skill {
 
             VariableLengthArray(const FieldType *const base)
                     : SingleBaseTypeContainer(base) { }
+
+
+            template<typename T>
+            api::Array<T> *read(streams::MappedInStream &in) const {
+                size_t length = (size_t) in.v64();
+                api::Array<T> *r = new api::Array<T>(length);
+                for (size_t i = 0; i < length; i++)
+                    r->update(i, this->base->read(in));
+                return r;
+            }
 
             virtual api::Box read(streams::MappedInStream &in) const {
                 api::Box r;
@@ -272,6 +290,15 @@ namespace skill {
             ListType(const FieldType *const base)
                     : SingleBaseTypeContainer(base) { }
 
+            template<typename T>
+            api::Array<T> *read(streams::MappedInStream &in) const {
+                size_t length = (size_t) in.v64();
+                api::Array<T> *r = new api::Array<T>(length);
+                for (size_t i = 0; i < length; i++)
+                    r->update(i, this->base->read(in));
+                return r;
+            }
+
             virtual api::Box read(streams::MappedInStream &in) const {
                 api::Box r;
                 size_t length = (size_t) in.v64();
@@ -298,6 +325,15 @@ namespace skill {
             SetType(const FieldType *const base)
                     : SingleBaseTypeContainer(base) { }
 
+            template<typename T>
+            api::Set<T> *read(streams::MappedInStream &in) const {
+                size_t length = (size_t) in.v64();
+                api::Set<T> *r = new api::Set<T>();
+                for (size_t i = 0; i < length; i++)
+                    r->add(this->base->read(in));
+                return r;
+            }
+
             virtual api::Box read(streams::MappedInStream &in) const {
                 api::Box r;
                 size_t length = (size_t) in.v64();
@@ -320,7 +356,7 @@ namespace skill {
             }
         };
 
-        struct MapType : public BuiltinFieldType<std::map<api::Box, api::Box> *, 20> {
+        struct MapType : public BuiltinFieldType<api::BoxedMap *, 20> {
             const FieldType *const key;
             const FieldType *const value;
         private:
