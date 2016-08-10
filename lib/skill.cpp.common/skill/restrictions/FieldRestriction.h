@@ -6,6 +6,7 @@
 #define SKILL_CPP_COMMON_FIELDRESTRICTION_H
 
 #include <assert.h>
+#include <iostream>
 #include "../api/Object.h"
 #include "../api/Box.h"
 
@@ -17,7 +18,7 @@ namespace skill {
             virtual ~FieldRestriction();
 
         protected:
-            FieldRestriction(int id) : id(id) { };
+            FieldRestriction(int id) : id(id) {};
         };
 
         using api::Box;
@@ -31,7 +32,7 @@ namespace skill {
             virtual bool check(Box v) const = 0;
 
         protected:
-            CheckableRestriction(int id) : FieldRestriction(id) { };
+            CheckableRestriction(int id) : FieldRestriction(id) {};
         };
 
         struct NonNull : public CheckableRestriction {
@@ -44,14 +45,14 @@ namespace skill {
         private:
             const static NonNull instance;
 
-            NonNull() : CheckableRestriction(0) { }
+            NonNull() : CheckableRestriction(0) {}
         };
 
         template<typename T>
         struct FieldDefault : public FieldRestriction {
             const T value;
 
-            FieldDefault(T v) : FieldRestriction(1), value(v) { };
+            FieldDefault(T v) : FieldRestriction(1), value(v) {};
         };
 
         template<typename T>
@@ -68,14 +69,18 @@ namespace skill {
 
             virtual bool check(Box v) const {
                 const T x = api::unbox<T>(v);
-                return min <= x && x <= max;
+                if (min <= x && x <= max)
+                    return true;
+                
+                std::cout << x << " not in [" << min << "; " << max << "]" << std::endl;
+                return false;
             }
         };
 
         struct Coding : public FieldRestriction {
             const api::String coding;
 
-            Coding(api::String coding) : FieldRestriction(5), coding(coding) { }
+            Coding(api::String coding) : FieldRestriction(5), coding(coding) {}
         };
 
         struct ConstantLengthPointer : public FieldRestriction {
@@ -84,7 +89,7 @@ namespace skill {
         private:
             const static ConstantLengthPointer instance;
 
-            ConstantLengthPointer() : FieldRestriction(7) { }
+            ConstantLengthPointer() : FieldRestriction(7) {}
         };
 
     }

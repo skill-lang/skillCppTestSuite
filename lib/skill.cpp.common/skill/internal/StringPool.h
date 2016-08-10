@@ -129,7 +129,7 @@ namespace skill {
                 }
             }
 
-            virtual api::Box read(streams::MappedInStream &in) const {
+            virtual api::Box read(streams::InStream &in) const {
                 api::Box r;
                 r.string = get((SKilLID) in.v64());
                 return r;

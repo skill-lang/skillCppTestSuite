@@ -39,7 +39,7 @@ namespace skill {
             /**
              * read a box from a stream using the correct read implementation
              */
-            virtual api::Box read(streams::MappedInStream &in) const = 0;
+            virtual api::Box read(streams::InStream &in) const = 0;
 
             /**
              * calculate the offset of a single box

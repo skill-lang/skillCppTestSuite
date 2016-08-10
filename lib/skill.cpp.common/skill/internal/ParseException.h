@@ -18,8 +18,8 @@ namespace skill {
                                              std::string msg) {
             std::stringstream message;
             message << "ParseException in file" << stream->getPath()
-            << "\n Position" << stream->getPosition()
-            << "\n Block" << blockCount
+            << "\n Position " << stream->getPosition()
+            << "\n Block    " << blockCount
             << "\n reason: " << msg << std::endl;
             return SkillException(message.str());
         }

@@ -266,11 +266,7 @@ namespace skill {
             virtual FieldDeclaration *addField(const AbstractStringKeeper *const keeper,
                                                TypeID id, const FieldType *type, api::String name) = 0;
 
-            virtual api::Box read(streams::MappedInStream &in) const {
-                api::Box r;
-                r.annotation = getAsAnnotation((SKilLID) (in.has(9) ? in.v64checked() : in.v64()));
-                return r;
-            }
+            virtual api::Box read(streams::InStream &in) const;
 
             virtual uint64_t offset(const api::Box &target) const {
                 return fieldTypes::V64FieldType::offset(target.annotation->id);

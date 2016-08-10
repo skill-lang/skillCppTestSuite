@@ -68,7 +68,7 @@ namespace skill {
             }
 
 
-            virtual api::Box read(streams::MappedInStream &in) const {
+            virtual api::Box read(streams::InStream &in) const {
                 api::Box r;
                 TypeID t = (TypeID) in.v64();
                 SKilLID id = (SKilLID) in.v64();

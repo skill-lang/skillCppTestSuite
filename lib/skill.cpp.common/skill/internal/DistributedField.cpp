@@ -76,27 +76,28 @@ bool DistributedField::check() const {
 
 
 inline void DistributedField::deleteBoxedContainer(api::Box b, const FieldType *const type) {
-    switch (type->typeID) {
-        case 15:
-        case 17:
-        case 18:
-            delete b.array;
-            return;
-        case 19:
-            delete b.set;
-            return;
+    if (b.annotation)
+        switch (type->typeID) {
+            case 15:
+            case 17:
+            case 18:
+                delete b.array;
+                return;
+            case 19:
+                delete b.set;
+                return;
 
-        case 20:
-            if (20 == ((const fieldTypes::MapType *const) type)->value->typeID) {
-                auto ps = b.map->all();
-                while (ps->hasNext())
-                    deleteBoxedContainer(ps->next().second, ((const fieldTypes::MapType *const) type)->value);
-            }
-            delete b.map;
-            return;
-        default:
-            return;
-    }
+            case 20:
+                if (20 == ((const fieldTypes::MapType *const) type)->value->typeID) {
+                    auto ps = b.map->all();
+                    while (ps->hasNext())
+                        deleteBoxedContainer(ps->next().second, ((const fieldTypes::MapType *const) type)->value);
+                }
+                delete b.map;
+                return;
+            default:
+                return;
+        }
 }
 
 
@@ -104,9 +105,11 @@ DistributedField::~DistributedField() {
     // delete containers stored in a box
     if (this->typeRequiresDestruction) {
         //! all container types require destruction; other types may no longer exist
-        for (const auto &b : owner->blocks)
-            for (auto i = b.bpo; i < b.bpo + b.dynamicCount; i++)
-                deleteBoxedContainer(data[i], this->type);
+        //! @note data may not have been forced yet if we are in fact lazy
+        if (data.p)
+            for (const auto &b : owner->blocks)
+                for (auto i = b.bpo; i < b.bpo + b.dynamicCount; i++)
+                    deleteBoxedContainer(data[i], this->type);
 
         for (const auto &i : newData)
             deleteBoxedContainer(i.second, this->type);

@@ -52,7 +52,7 @@ namespace skill {
         public:
             ConstantI8(int8_t value) : ConstantFieldType(value) { }
 
-            virtual api::Box read(streams::MappedInStream &in) const {
+            virtual api::Box read(streams::InStream &in) const {
                 register api::Box r;
                 r.i8 = value;
                 return r;
@@ -64,7 +64,7 @@ namespace skill {
 
             ConstantI16(int16_t value) : ConstantFieldType(value) { }
 
-            virtual api::Box read(streams::MappedInStream &in) const {
+            virtual api::Box read(streams::InStream &in) const {
                 register api::Box r;
                 r.i16 = value;
                 return r;
@@ -75,7 +75,7 @@ namespace skill {
         public:
             ConstantI32(int32_t value) : ConstantFieldType(value) { }
 
-            virtual api::Box read(streams::MappedInStream &in) const {
+            virtual api::Box read(streams::InStream &in) const {
                 register api::Box r;
                 r.i32 = value;
                 return r;
@@ -86,7 +86,7 @@ namespace skill {
         public:
             ConstantI64(int64_t value) : ConstantFieldType(value) { }
 
-            virtual api::Box read(streams::MappedInStream &in) const {
+            virtual api::Box read(streams::InStream &in) const {
                 register api::Box r;
                 r.i64 = value;
                 return r;
@@ -97,7 +97,7 @@ namespace skill {
         public:
             ConstantV64(int64_t value) : ConstantFieldType(value) { }
 
-            virtual api::Box read(streams::MappedInStream &in) const {
+            virtual api::Box read(streams::InStream &in) const {
                 register api::Box r;
                 r.i64 = value;
                 return r;
@@ -114,7 +114,7 @@ namespace skill {
         struct StatelessFieldType : BuiltinFieldType<T, id> {
             StatelessFieldType() : BuiltinFieldType<T, id>() { }
 
-            virtual api::Box read(streams::MappedInStream &in) const {
+            virtual api::Box read(streams::InStream &in) const {
                 return Read(in);
             }
 
@@ -133,7 +133,7 @@ namespace skill {
 
             FixedSizeType() { }
 
-            virtual api::Box read(streams::MappedInStream &in) const {
+            virtual api::Box read(streams::InStream &in) const {
                 return Read(in);
             }
 
@@ -222,14 +222,14 @@ namespace skill {
                     : SingleBaseTypeContainer<api::Box *, 15>(base), length((size_t) length) { }
 
             template<typename T>
-            api::Array<T> *read(streams::MappedInStream &in) const {
+            api::Array<T> *read(streams::InStream &in) const {
                 api::Array<T> *r = new api::Array<T>(length);
                 for (size_t i = 0; i < length; i++)
                     r->update(i, this->base->read(in));
                 return r;
             }
 
-            virtual api::Box read(streams::MappedInStream &in) const {
+            virtual api::Box read(streams::InStream &in) const {
                 api::Box r;
                 r.array = new api::Array<api::Box>(length);
                 for (size_t i = 0; i < length; i++)
@@ -256,7 +256,7 @@ namespace skill {
 
 
             template<typename T>
-            api::Array<T> *read(streams::MappedInStream &in) const {
+            api::Array<T> *read(streams::InStream &in) const {
                 size_t length = (size_t) in.v64();
                 api::Array<T> *r = new api::Array<T>(length);
                 for (size_t i = 0; i < length; i++)
@@ -264,7 +264,7 @@ namespace skill {
                 return r;
             }
 
-            virtual api::Box read(streams::MappedInStream &in) const {
+            virtual api::Box read(streams::InStream &in) const {
                 api::Box r;
                 size_t length = (size_t) in.v64();
                 r.list = new api::Array<api::Box>(length);
@@ -299,7 +299,7 @@ namespace skill {
                 return r;
             }
 
-            virtual api::Box read(streams::MappedInStream &in) const {
+            virtual api::Box read(streams::InStream &in) const {
                 api::Box r;
                 size_t length = (size_t) in.v64();
                 r.list = new api::Array<api::Box>(length);
@@ -328,16 +328,16 @@ namespace skill {
             template<typename T>
             api::Set<T> *read(streams::MappedInStream &in) const {
                 size_t length = (size_t) in.v64();
-                api::Set<T> *r = new api::Set<T>();
+                api::Set<T> *r = new api::Set<T>(2 * length);
                 for (size_t i = 0; i < length; i++)
                     r->add(this->base->read(in));
                 return r;
             }
 
-            virtual api::Box read(streams::MappedInStream &in) const {
+            virtual api::Box read(streams::InStream &in) const {
                 api::Box r;
                 size_t length = (size_t) in.v64();
-                r.set = new api::Set<api::Box>();
+                r.set = new api::Set<api::Box>(length);
                 for (size_t i = 0; i < length; i++)
                     r.set->add(this->base->read(in));
                 return r;
@@ -375,7 +375,7 @@ namespace skill {
                     delete value;
             }
 
-            virtual api::Box read(streams::MappedInStream &in) const {
+            virtual api::Box read(streams::InStream &in) const {
                 api::Box r;
                 size_t length = (size_t) in.v64();
                 r.map = new api::Map<api::Box, api::Box>;

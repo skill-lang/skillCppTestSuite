@@ -170,7 +170,7 @@ namespace skill {
         SkillFile *parseFile(std::unique_ptr<FileInputStream> in, WriteMode mode) {
             struct LFEntry {
                 LFEntry(AbstractStoragePool *const pool, SKilLID count)
-                        : pool(pool), count(count) { }
+                        : pool(pool), count(count) {}
 
                 AbstractStoragePool *const pool;
                 const SKilLID count;
@@ -243,7 +243,7 @@ namespace skill {
 
                         debugOnly {
                             std::cout << "processing type " << *name << " at " << in->getPosition()
-                            << std::endl;
+                                      << std::endl;
                         }
 
                         // check duplicate types
@@ -392,7 +392,7 @@ namespace skill {
 
                                 debugOnly {
                                     std::cout << "processing new field " << *p->name << "." << *fieldName
-                                    << " at " << in->getPosition() << std::endl;
+                                              << " at " << in->getPosition() << std::endl;
                                 }
 
                                 const auto t = parseFieldType(in.get(), types, String.get(), Annotation.get(),
@@ -404,11 +404,20 @@ namespace skill {
                                 for (; fieldRestrictionCount != 0; fieldRestrictionCount--) {
                                     const int i = (const int) in->v64();
                                     switch (i) {
-                                        case 0: // nonnull
+                                        case 0: {// nonnull
                                             rest.insert(restrictions::NonNull::get());
-                                        case 1: // default
                                             break;
-                                        case 3:
+                                        }
+
+                                        case 1: {// default
+                                            if (5 == t->typeID || 32 <= t->typeID)
+                                                in->v64();
+                                            else
+                                                t->read(*in);
+                                            break;
+                                        }
+
+                                        case 3: {
                                             //range
                                             switch (t->typeID) {
                                                 case 7:
@@ -438,16 +447,29 @@ namespace skill {
                                                             "Range restricton on a type that can not be restricted.");
                                             }
                                             break;
-                                        case 5: // coding
+                                        }
+
+                                        case 5: { // coding
                                             String->get((SKilLID) in->v64());
                                             break;
-                                        case 7:
+                                        }
+
+                                        case 7: {
                                             // constant length pointer
                                             break;
-                                        case 9:
+                                        }
+
+                                        case 9: {
                                             // oneof
+
+                                            // read array of type IDs
+                                            for (int c = in->v64(); c != 0; c--)
+                                                in->v64();
+                                            break;
+                                        }
+
                                         default:
-                                            ParseException(
+                                            throw ParseException(
                                                     in, blockCounter,
                                                     "Found an unknown field restriction. Please regenerate your binding, if possible.");
                                     }

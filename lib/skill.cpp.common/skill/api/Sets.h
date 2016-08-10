@@ -69,7 +69,7 @@ namespace skill {
 
         public:
 
-            Set() : std::unordered_set<T>() { }
+            Set(size_t size) : std::unordered_set<T>(size) { }
 
             virtual ~Set() { };
 

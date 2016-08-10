@@ -34,6 +34,9 @@ namespace skill {
             friend
             class internal::BasePool;
 
+            template<typename T>
+            friend struct std::hash;
+
             friend class internal::DistributedField;
 
             friend class internal::LazyField;
@@ -82,6 +85,5 @@ inline std::ostream &operator<<(std::ostream &os, const skill::api::Object *obj)
     obj->prettyString(os);
     return os;
 }
-
 
 #endif //SKILL_CPP_COMMON_OBJECT_H

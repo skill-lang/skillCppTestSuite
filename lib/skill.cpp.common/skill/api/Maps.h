@@ -6,7 +6,7 @@
 #define SKILL_CPP_COMMON_API_MAP_H
 
 #include <memory>
-#include <map>
+#include <unordered_map>
 #include "Box.h"
 
 namespace skill {
@@ -64,9 +64,9 @@ namespace skill {
          * Actual representation of skill sets.
          */
         template<typename K, typename V>
-        class Map : public std::map<K, V>, public BoxedMap {
+        class Map : public std::unordered_map<K, V>, public BoxedMap {
 
-            typedef typename std::map<K, V>::const_iterator iter;
+            typedef typename std::unordered_map<K, V>::const_iterator iter;
 
             class Iterator : public MapIterator {
                 iter state;
@@ -98,7 +98,7 @@ namespace skill {
                 return r;
             }
 
-            Map() : std::map<K, V>() { }
+            Map() : std::unordered_map<K, V>() { }
 
             virtual ~Map() { }
 

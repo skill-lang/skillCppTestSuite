@@ -61,3 +61,10 @@ void AbstractStoragePool::complete(SkillFile *owner) {
     this->owner = owner;
     // valid if there are no known pools
 }
+
+api::Box AbstractStoragePool::read(streams::InStream &in) const {
+    api::Box r;
+    const SKilLID id = (SKilLID) (in.has(9) ? in.v64checked() : in.v64());
+    r.annotation = (id <= 0 ? nullptr : (((Object**)((StoragePool<Object*, Object*>*)this)->data)[id]));
+    return r;
+}
