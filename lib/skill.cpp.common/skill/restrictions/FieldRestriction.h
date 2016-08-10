@@ -71,7 +71,7 @@ namespace skill {
                 const T x = api::unbox<T>(v);
                 if (min <= x && x <= max)
                     return true;
-                
+
                 std::cout << x << " not in [" << min << "; " << max << "]" << std::endl;
                 return false;
             }

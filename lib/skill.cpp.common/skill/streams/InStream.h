@@ -79,14 +79,15 @@ namespace skill {
 
             inline int64_t i64() {
                 ensure(position + 7 < end);
-                register uint64_t r = ((uint64_t) *(position++)) << 56;
+                register uint64_t r = 0;
+                r |= ((uint64_t) *(position++)) << 56;
                 r |= ((uint64_t) *(position++)) << 48;
                 r |= ((uint64_t) *(position++)) << 40;
                 r |= ((uint64_t) *(position++)) << 32;
-                r |= *(position++) << 24;
-                r |= *(position++) << 16;
-                r |= *(position++) << 8;
-                r |= *(position++);
+                r |= ((uint64_t) *(position++)) << 24;
+                r |= ((uint64_t) *(position++)) << 16;
+                r |= ((uint64_t) *(position++)) << 8;
+                r |= ((uint64_t) *(position++));
                 return r;
             }
 
