@@ -15,13 +15,13 @@
 #include "../restrictions/TypeRestriction.h"
 #include "../fieldTypes/BuiltinFieldType.h"
 #include "../fieldTypes/AnnotationType.h"
-#include "../concurrent/ThreadPool.h"
 
 #include <vector>
 #include <unordered_map>
 #include <string>
 #include <iostream>
 #include <cassert>
+#include <omp.h>
 
 /**
  * set to 1, to enable debug output; this should be disabled on all commits
@@ -521,11 +521,10 @@ namespace skill {
 
             std::vector<std::string *> results;
 
-            // stack-local thread pool als alternative zu barrier; thread::yield!
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(dynamic) num_threads(omp_get_max_threads()/2)
             for (size_t i = 0; i < types->size(); i++) {
                 auto t = types->at(i);
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(dynamic) num_threads(2)
                 for (size_t j = 0; j < t->dataFields.size(); j++) {
                     auto f = t->dataFields[j];
 
@@ -539,7 +538,6 @@ namespace skill {
 
                         const int blockIndex = t->blocks[bsIndex++].blockIndex;
                         if (dc->count) {
-                            //   barrier.begin
                             MappedInStream *in = dataList[blockIndex].get();
                             try {
                                 f->read(in, dc);

@@ -8,10 +8,8 @@
 #include "FileStructure.h"
 #include "../api/AbstractField.h"
 #include "../restrictions/FieldRestriction.h"
-#include "../concurrent/ThreadPool.h"
 #include <vector>
 #include <unordered_set>
-#include <future>
 
 namespace skill {
     namespace internal {
@@ -69,11 +67,10 @@ namespace skill {
         public:
             virtual size_t offset() const = 0;
 
-            //std::future<size_t> offsetResult;
-            // offset cache for now
-            // TODO replace by fixed async code
+            //! offset cache for now
+            //! TODO replace by fixed async code
             size_t awaitOffset;
-        //protected:
+
             virtual void write(streams::MappedOutStream *out) const = 0;
 
         public:
@@ -91,26 +88,6 @@ namespace skill {
              * construction and done massively in parallel.
              */
             virtual void read(const streams::MappedInStream *in, const Chunk *target) = 0;
-
-            //! start offset calculation
-            /*void asyncOffset() {
-                offsetResult = concurrent::ThreadPool::global.execute([this]() {
-                    return this->offset();
-                });
-            }
-
-            //! await result of offset calculation
-            size_t awaitOffset() {
-                return offsetResult.get();
-            }*/
-
-            //! start write job
-            /*std::future<void> asyncWrite(const streams::MappedOutStream *map) {
-                return concurrent::ThreadPool::global.execute([this](const streams::MappedOutStream *map) {
-                    Chunk *c = dataChunks.back();
-                    return this->write(map->clone(c->begin, c->end));
-                }, map);
-            }*/
         };
     }
 }

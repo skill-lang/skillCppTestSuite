@@ -2,7 +2,6 @@
 // Created by Timm Felden on 03.02.16.
 //
 
-#include <future>
 #include "FileWriter.h"
 #include "../api/SkillFile.h"
 #include "LazyField.h"
@@ -183,7 +182,6 @@ void FileWriter::writeFieldData(SkillFile *state, streams::FileOutputStream &out
     streams::MappedOutStream *map = out.jumpAndMap(offset);
 
     // write field data
-    std::vector<std::future<void>> jobs;
     for (FieldDeclaration *f : fields)
         f->write(map);
 
@@ -194,8 +192,4 @@ void FileWriter::writeFieldData(SkillFile *state, streams::FileOutputStream &out
     // unfix pools
     for (auto t : *state)
         t->fix(false);
-
-    // await jobs
-    for (auto &j : jobs)
-        j.get();
 }

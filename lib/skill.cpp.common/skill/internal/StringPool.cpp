@@ -9,7 +9,7 @@ using namespace skill;
 using api::String;
 
 internal::StringPool::StringPool(streams::FileInputStream *in, AbstractStringKeeper *keeper)
-        : lock(), in(in), knownStrings(), keeper(keeper), idMap(), stringPositions(), lastID(0) {
+        : in(in), knownStrings(), keeper(keeper), idMap(), stringPositions(), lastID(0) {
     // ensure existence of fake entry
     stringPositions.push_back(std::pair<long, int>(-1L, -1));
     idMap.push_back(nullptr);

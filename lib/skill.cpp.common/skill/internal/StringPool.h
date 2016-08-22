@@ -8,8 +8,6 @@
 #include <set>
 #include <vector>
 #include <unordered_set>
-#include <mutex>
-#include <future>
 
 #include "../api/StringAccess.h"
 #include "../streams/FileInputStream.h"
@@ -32,7 +30,6 @@ namespace skill {
          * @author Timm Felden
          */
         class StringPool : public StringAccess {
-            mutable std::mutex lock;
 
             streams::FileInputStream *in;
 
@@ -100,30 +97,32 @@ namespace skill {
                 if (index <= 0) return nullptr;
                 else if (index > lastID) throw SkillException("index of StringPool::get too large");
                 else {
-                    std::unique_lock<std::mutex>(lock);
                     String result = idMap[index];
-                    if (nullptr == result) {
-                        // read result
-                        auto off = stringPositions[index];
-                        long mark = in->getPosition();
-                        in->jump(off.first);
-                        result = in->string(off.second, index);
-                        in->jump(mark);
+                        if (nullptr == result) {
+#pragma omp critical
+                            {
+                            // read result
+                            auto off = stringPositions[index];
+                            long mark = in->getPosition();
+                            in->jump(off.first);
+                            result = in->string(off.second, index);
+                            in->jump(mark);
 
-                        // unify result with known strings
-                        auto it = knownStrings.find(result);
-                        if (it == knownStrings.end())
-                            // a new string
-                            knownStrings.insert(result);
-                        else {
-                            // a string that exists already;
-                            // the string cannot be from the file, so set the id
-                            delete result;
-                            result = *it;
-                            const_cast<string_t *>(result)->id = index;
+                            // unify result with known strings
+                            auto it = knownStrings.find(result);
+                            if (it == knownStrings.end())
+                                // a new string
+                                knownStrings.insert(result);
+                            else {
+                                // a string that exists already;
+                                // the string cannot be from the file, so set the id
+                                delete result;
+                                result = *it;
+                                const_cast<string_t *>(result)->id = index;
+                            }
+
+                            idMap[index] = result;
                         }
-
-                        idMap[index] = result;
                     }
                     return result;
                 }
