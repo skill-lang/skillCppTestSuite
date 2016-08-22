@@ -6,7 +6,6 @@
 #define SKILL_CPP_COMMON_FIELDRESTRICTION_H
 
 #include <assert.h>
-#include <iostream>
 #include "../api/Object.h"
 #include "../api/Box.h"
 
@@ -69,11 +68,7 @@ namespace skill {
 
             virtual bool check(Box v) const {
                 const T x = api::unbox<T>(v);
-                if (min <= x && x <= max)
-                    return true;
-
-                std::cout << x << " not in [" << min << "; " << max << "]" << std::endl;
-                return false;
+                return min <= x && x <= max;
             }
         };
 

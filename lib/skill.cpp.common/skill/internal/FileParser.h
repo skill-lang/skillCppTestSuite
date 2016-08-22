@@ -519,11 +519,16 @@ namespace skill {
         inline void triggerFieldDeserialization(std::vector<AbstractStoragePool *> *types,
                                                 std::vector<std::unique_ptr<MappedInStream>> &dataList) {
 
-            //std::vector<std::future<std::string *>> results;
+            std::vector<std::string *> results;
 
             // stack-local thread pool als alternative zu barrier; thread::yield!
-            for (auto t : *types) {
-                for (FieldDeclaration *f : t->dataFields) {
+#pragma omp parallel for schedule(dynamic)
+            for (size_t i = 0; i < types->size(); i++) {
+                auto t = types->at(i);
+#pragma omp parallel for schedule(dynamic)
+                for (size_t j = 0; j < t->dataFields.size(); j++) {
+                    auto f = t->dataFields[j];
+
                     int bsIndex = 0;
 
                     for (Chunk *dc : f->dataChunks) {
@@ -536,41 +541,36 @@ namespace skill {
                         if (dc->count) {
                             //   barrier.begin
                             MappedInStream *in = dataList[blockIndex].get();
-                            f->read(in, dc);
-                            /*results.push_back(concurrent::ThreadPool::global.execute(
-                                    [](FieldDeclaration *f, MappedInStream *in, Chunk *dc) -> std::string * {
-                                        try {
-                                            f->read(in, dc);
-                                        } catch (SkillException e) {
-                                            return new std::string(e.message);
-                                        } catch (...) {
-                                            return new std::string("unknown error in concurrent read");
-                                        }
-                                        return nullptr;
-                                    }, f, in, dc));*/
+                            try {
+                                f->read(in, dc);
+                            } catch (SkillException e) {
+#pragma omp critical
+                                {
+                                    results.push_back(new std::string(e.message));
+                                }
+                            } catch (...) {
+#pragma omp critical
+                                {
+                                    results.push_back(new std::string("unknown error in concurrent read"));
+                                }
+                            }
                         }
                     }
                 }
             }
 
-            /*bool failed = false;
-            for (auto &r : results)
-                if (nullptr != r.get())
-                    failed = true;
-
             // check for errors
-            if (failed) {
+            if (results.size()) {
                 std::stringstream msg;
 
-                for (auto &r : results) {
-                    std::string *s = r.get();
+                for (const auto s : results) {
                     if (s) {
                         msg << *s << std::endl;
                         delete s;
                     }
                 }
                 throw SkillException(msg.str());
-            }*/
+            }
         }
     }
 }
