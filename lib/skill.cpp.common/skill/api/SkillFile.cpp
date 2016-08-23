@@ -15,7 +15,7 @@ SkillFile::SkillFile(streams::FileInputStream *in, WriteMode mode, StringPool *s
                      fieldTypes::AnnotationType *annotation,
                      std::vector<AbstractStoragePool *> *types, typeByName_t *typesByName)
         : strings(stringPool), annotation(annotation), types(new internal::AbstractStoragePool *[types->size()]),
-          typesByName(typesByName), fromFile(in), mode(mode) {
+          typesByName(typesByName), fromFile(in), currentWritePath(fromFile->getPath()), mode(mode) {
     for (size_t i = 0; i < types->size(); i++) {
         auto t = types->at(i);
         const_cast<AbstractStoragePool **>(this->types)[i] = t;
