@@ -98,9 +98,9 @@ namespace skill {
                 else if (index > lastID) throw SkillException("index of StringPool::get too large");
                 else {
                     String result = idMap[index];
-                        if (nullptr == result) {
+                    if (nullptr == result) {
 #pragma omp critical
-                            {
+                        {
                             // read result
                             auto off = stringPositions[index];
                             long mark = in->getPosition();
@@ -135,19 +135,31 @@ namespace skill {
             }
 
             virtual uint64_t offset(const api::Box &target) const {
-                return fieldTypes::V64FieldType::offset(target.string->id);
+                if (target.string)
+                    return fieldTypes::V64FieldType::offset(target.string->id);
+                else
+                    return 1;
             }
 
             inline uint64_t offset(const api::String &target) const {
-                return fieldTypes::V64FieldType::offset(target->id);
+                if (target)
+                    return fieldTypes::V64FieldType::offset(target->id);
+                else
+                    return 1;
             }
 
             virtual void write(streams::MappedOutStream *out, api::Box &target) const {
-                out->v64(target.string->id);
+                if (target.string)
+                    out->v64(target.string->id);
+                else
+                    out->i8(0);
             }
 
             inline void write(streams::MappedOutStream *out, const api::String target) const {
-                out->v64(target->id);
+                if (target)
+                    out->v64(target->id);
+                else
+                    out->i8(0);
             }
 
             /**

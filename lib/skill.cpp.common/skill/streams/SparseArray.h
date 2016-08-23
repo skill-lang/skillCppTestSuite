@@ -5,6 +5,8 @@
 #ifndef SKILL_CPP_COMMON_SPARSEARRAY_H
 #define SKILL_CPP_COMMON_SPARSEARRAY_H
 
+#include "../utils.h"
+
 #include <cstddef>
 
 namespace skill {
@@ -19,11 +21,11 @@ namespace skill {
         struct SparseArray {
         private:
             SparseArray(T *p, size_t size)
-                    : p(p), size(size) { }
+                    : p(p), size(size) {}
 
         public:
             //! construct in an invalid state
-            SparseArray() : p(nullptr), size(0) { }
+            SparseArray() : p(nullptr), size(0) {}
 
             /**
              * @param size
@@ -48,6 +50,16 @@ namespace skill {
             ~SparseArray() {
                 if (p)
                     delete[] p;
+            }
+
+            /**
+             * changes the size of the sparse array
+             */
+            void resize(size_t newSize) {
+                if (size == newSize)
+                    return;
+
+                SK_TODO;
             }
 
             T *const p;

@@ -68,9 +68,10 @@ void FileWriter::write(api::SkillFile *state, const std::string &path) {
 
     // Calculate Offsets
     // @note this has to happen after string IDs have been updated
-    for (FieldDeclaration *f : fieldQueue) {
+#pragma omp parallel for schedule(dynamic, 4)
+    for (size_t i = 0; i < fieldQueue.size(); i++) {
+        FieldDeclaration *f = fieldQueue[i];
         f->awaitOffset = f->offset();
-        //f->asyncOffset();
     }
 
     // write count of the type block
@@ -179,11 +180,19 @@ void FileWriter::writeFieldData(SkillFile *state, streams::FileOutputStream &out
                                 size_t offset, std::vector<FieldDeclaration *> &fields) {
 
     // map field data
-    streams::MappedOutStream *map = out.jumpAndMap(offset);
+    streams::MappedOutStream *source = out.jumpAndMap(offset);
 
     // write field data
-    for (FieldDeclaration *f : fields)
+#pragma omp parallel for schedule(dynamic, 4)
+    for (size_t i = 0; i < fields.size(); i++) {
+        FieldDeclaration *f = fields[i];
+        auto c = f->dataChunks.back();
+        const auto map = source->clone(c->begin, c->end);
         f->write(map);
+        delete map;
+    }
+
+    out.unmap(source);
 
     ///////////////////////
     // PHASE 4: Cleaning //

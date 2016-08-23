@@ -20,7 +20,7 @@ namespace skill {
         class BuiltinFieldType : public FieldType {
 
         protected:
-            BuiltinFieldType() : FieldType(id) { }
+            BuiltinFieldType() : FieldType(id) {}
         };
 
         template<typename T, TypeID id>
@@ -31,7 +31,7 @@ namespace skill {
             }
 
         protected:
-            ConstantFieldType(T value) : BuiltinFieldType<T, id>(), value(value) { }
+            ConstantFieldType(T value) : BuiltinFieldType<T, id>(), value(value) {}
 
         public:
             /**
@@ -50,7 +50,7 @@ namespace skill {
 
         class ConstantI8 : public ConstantFieldType<int8_t, 0> {
         public:
-            ConstantI8(int8_t value) : ConstantFieldType(value) { }
+            ConstantI8(int8_t value) : ConstantFieldType(value) {}
 
             virtual api::Box read(streams::InStream &in) const {
                 register api::Box r;
@@ -62,7 +62,7 @@ namespace skill {
         class ConstantI16 : public ConstantFieldType<int16_t, 1> {
         public:
 
-            ConstantI16(int16_t value) : ConstantFieldType(value) { }
+            ConstantI16(int16_t value) : ConstantFieldType(value) {}
 
             virtual api::Box read(streams::InStream &in) const {
                 register api::Box r;
@@ -73,7 +73,7 @@ namespace skill {
 
         class ConstantI32 : public ConstantFieldType<int32_t, 2> {
         public:
-            ConstantI32(int32_t value) : ConstantFieldType(value) { }
+            ConstantI32(int32_t value) : ConstantFieldType(value) {}
 
             virtual api::Box read(streams::InStream &in) const {
                 register api::Box r;
@@ -84,7 +84,7 @@ namespace skill {
 
         class ConstantI64 : public ConstantFieldType<int64_t, 3> {
         public:
-            ConstantI64(int64_t value) : ConstantFieldType(value) { }
+            ConstantI64(int64_t value) : ConstantFieldType(value) {}
 
             virtual api::Box read(streams::InStream &in) const {
                 register api::Box r;
@@ -95,7 +95,7 @@ namespace skill {
 
         class ConstantV64 : public ConstantFieldType<int64_t, 4> {
         public:
-            ConstantV64(int64_t value) : ConstantFieldType(value) { }
+            ConstantV64(int64_t value) : ConstantFieldType(value) {}
 
             virtual api::Box read(streams::InStream &in) const {
                 register api::Box r;
@@ -112,7 +112,7 @@ namespace skill {
                 uint64_t Offset(api::Box &target),
                 void Write(streams::MappedOutStream *out, api::Box &target)*/>
         struct StatelessFieldType : BuiltinFieldType<T, id> {
-            StatelessFieldType() : BuiltinFieldType<T, id>() { }
+            StatelessFieldType() : BuiltinFieldType<T, id>() {}
 
             virtual api::Box read(streams::InStream &in) const {
                 return Read(in);
@@ -131,7 +131,7 @@ namespace skill {
                 uint64_t size>
         struct FixedSizeType : StatelessFieldType<T, id, Read> {
 
-            FixedSizeType() { }
+            FixedSizeType() {}
 
             virtual api::Box read(streams::InStream &in) const {
                 return Read(in);
@@ -140,14 +140,10 @@ namespace skill {
             virtual uint64_t offset(const api::Box &target) const {
                 return size;
             }
-
-            virtual void write(streams::MappedOutStream *out, api::Box &target) const {
-                SK_TODO;
-            }
         };
 
         struct V64FieldType : public StatelessFieldType<int64_t, 11, InStream::v64Box> {
-            V64FieldType() : StatelessFieldType<int64_t, 11, InStream::v64Box>() { }
+            V64FieldType() : StatelessFieldType<int64_t, 11, InStream::v64Box>() {}
 
             static uint64_t offset(int v) {
                 return (0L == (v & 0xFFFFFF80L)) ? 1 :
@@ -180,21 +176,69 @@ namespace skill {
             }
 
             virtual void write(streams::MappedOutStream *out, api::Box &target) const {
-                SK_TODO;
+                out->v64(target.i64);
             }
         };
 
-        const FixedSizeType<bool, 6, InStream::boolBox, 1> BoolType;
-        const FixedSizeType<int8_t, 7, InStream::i8Box, 1> I8;
-        const FixedSizeType<int16_t, 8, InStream::i16Box, 2> I16;
-        const FixedSizeType<int32_t, 9, InStream::i32Box, 4> I32;
-        const FixedSizeType<int64_t, 10, InStream::i64Box, 8> I64;
+        struct BoolFieldType : public FixedSizeType<bool, 6, InStream::boolBox, 1> {
+            virtual void write(streams::MappedOutStream *out, api::Box &target) const {
+                out->boolean(target.boolean);
+            }
+        };
+
+        const BoolFieldType BoolType;
+
+        struct I8FieldType : public FixedSizeType<int8_t, 7, InStream::i8Box, 1> {
+            virtual void write(streams::MappedOutStream *out, api::Box &target) const {
+                out->i8(target.i8);
+            }
+        };
+
+        const I8FieldType I8;
+
+        struct I16FieldType : public FixedSizeType<int16_t, 8, InStream::i16Box, 2> {
+            virtual void write(streams::MappedOutStream *out, api::Box &target) const {
+                out->i16(target.i16);
+            }
+        };
+
+        const I16FieldType I16;
+
+        struct I32FieldType : public FixedSizeType<int32_t, 9, InStream::i32Box, 4> {
+            virtual void write(streams::MappedOutStream *out, api::Box &target) const {
+                out->i32(target.i32);
+            }
+        };
+
+        const I32FieldType I32;
+
+        struct I64FieldType : public FixedSizeType<int64_t, 10, InStream::i64Box, 8> {
+            virtual void write(streams::MappedOutStream *out, api::Box &target) const {
+                out->i64(target.i64);
+            }
+        };
+
+        const I64FieldType I64;
         const V64FieldType V64;
-        const FixedSizeType<float, 12, InStream::f32Box, 4> F32;
-        const FixedSizeType<double, 13, InStream::f64Box, 8> F64;
+
+        struct F32FieldType : public FixedSizeType<float, 12, InStream::f32Box, 4> {
+            virtual void write(streams::MappedOutStream *out, api::Box &target) const {
+                out->f32(target.f32);
+            }
+        };
+
+        const F32FieldType F32;
+
+        struct F64FieldType : public FixedSizeType<double, 13, InStream::f64Box, 8> {
+            virtual void write(streams::MappedOutStream *out, api::Box &target) const {
+                out->f64(target.f64);
+            }
+        };
+
+        const F64FieldType F64;
 
         template<typename T, TypeID id>
-        struct SingleBaseTypeContainer : public BuiltinFieldType<T *, 15> {
+        struct SingleBaseTypeContainer : public BuiltinFieldType<T *, id> {
             const FieldType *const base;
         private:
             const bool destroyBase;
@@ -202,7 +246,7 @@ namespace skill {
 
             SingleBaseTypeContainer(const FieldType *const base)
                     : base(base),
-                      destroyBase(base->requiresDestruction()) { }
+                      destroyBase(base->requiresDestruction()) {}
 
             virtual ~SingleBaseTypeContainer() {
                 if (destroyBase)
@@ -219,7 +263,7 @@ namespace skill {
             const size_t length;
 
             ConstantLengthArray(int64_t length, const FieldType *const base)
-                    : SingleBaseTypeContainer<api::Box *, 15>(base), length((size_t) length) { }
+                    : SingleBaseTypeContainer<api::Box *, 15>(base), length((size_t) length) {}
 
             template<typename T>
             api::Array<T> *read(streams::InStream &in) const {
@@ -245,14 +289,17 @@ namespace skill {
             }
 
             virtual void write(streams::MappedOutStream *out, api::Box &target) const {
-                SK_TODO;
+                for (size_t i = 0; i < length; i++) {
+                    auto v = target.array->get(i);
+                    this->base->write(out, v);
+                }
             }
         };
 
         struct VariableLengthArray : public SingleBaseTypeContainer<std::vector<api::Box> *, 17> {
 
             VariableLengthArray(const FieldType *const base)
-                    : SingleBaseTypeContainer(base) { }
+                    : SingleBaseTypeContainer(base) {}
 
 
             template<typename T>
@@ -281,14 +328,19 @@ namespace skill {
             }
 
             virtual void write(streams::MappedOutStream *out, api::Box &target) const {
-                SK_TODO;
+                const size_t length = target.array->length();
+                out->v64(length);
+                for (size_t i = 0; i < length; i++) {
+                    auto v = target.array->get(i);
+                    this->base->write(out, v);
+                }
             }
         };
 
         struct ListType : public SingleBaseTypeContainer<std::vector<api::Box> *, 18> {
 
             ListType(const FieldType *const base)
-                    : SingleBaseTypeContainer(base) { }
+                    : SingleBaseTypeContainer(base) {}
 
             template<typename T>
             api::Array<T> *read(streams::MappedInStream &in) const {
@@ -316,14 +368,19 @@ namespace skill {
             }
 
             virtual void write(streams::MappedOutStream *out, api::Box &target) const {
-                SK_TODO;
+                const size_t length = target.list->length();
+                out->v64(length);
+                for (size_t i = 0; i < length; i++) {
+                    auto v = target.list->get(i);
+                    this->base->write(out, v);
+                }
             }
         };
 
         struct SetType : public SingleBaseTypeContainer<api::BoxedSet *, 19> {
 
             SetType(const FieldType *const base)
-                    : SingleBaseTypeContainer(base) { }
+                    : SingleBaseTypeContainer(base) {}
 
             template<typename T>
             api::Set<T> *read(streams::MappedInStream &in) const {
@@ -352,7 +409,12 @@ namespace skill {
             }
 
             virtual void write(streams::MappedOutStream *out, api::Box &target) const {
-                SK_TODO;
+                out->v64(target.set->length());
+                auto ts = target.set->all();
+                while (ts->hasNext()) {
+                    auto t = ts->next();
+                    this->base->write(out, t);
+                }
             }
         };
 
@@ -366,7 +428,7 @@ namespace skill {
 
             MapType(const FieldType *const key, const FieldType *const value)
                     : key(key), value(value), destroyKey(key->requiresDestruction()),
-                      destroyValue(value->requiresDestruction()) { }
+                      destroyValue(value->requiresDestruction()) {}
 
             virtual ~MapType() {
                 if (destroyKey)
@@ -399,7 +461,13 @@ namespace skill {
             }
 
             virtual void write(streams::MappedOutStream *out, api::Box &target) const {
-                SK_TODO;
+                out->v64(target.map->length());
+                auto it = target.map->all();
+                while (it->hasNext()) {
+                    auto p = it->next();
+                    this->key->write(out, p.first);
+                    this->value->write(out, p.second);
+                }
             }
 
             virtual bool requiresDestruction() const {

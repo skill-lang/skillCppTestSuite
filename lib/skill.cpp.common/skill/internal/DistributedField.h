@@ -16,8 +16,8 @@ namespace skill {
         protected:
             // data held as in storage pools
             // @note see paper notes for O(1) implementation
-            streams::SparseArray<api::Box> data; //Array[T]()
-            std::unordered_map<const api::Object *, api::Box> newData;
+            mutable streams::SparseArray<api::Box> data; //Array[T]()
+            mutable std::unordered_map<const api::Object *, api::Box> newData;
 
         public:
             DistributedField(const FieldType *const type, const api::string_t *name,

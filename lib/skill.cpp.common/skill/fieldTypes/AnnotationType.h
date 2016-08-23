@@ -37,7 +37,7 @@ namespace skill {
 
         public:
             AnnotationType(std::vector<internal::AbstractStoragePool *> *types)
-                    : types(types), typesByName() { }
+                    : types(types), typesByName() {}
 
             virtual ~AnnotationType() {
                 for (auto p : *types)
@@ -86,7 +86,12 @@ namespace skill {
             }
 
             virtual void write(streams::MappedOutStream *out, api::Box &target) const {
-                SK_TODO;
+                if (target.annotation) {
+                    out->v64(typesByName[target.annotation->skillName()]->typeID);
+                    out->v64(target.annotation->id);
+                } else {
+                    out->i16(0);
+                }
             }
 
             virtual bool requiresDestruction() const {

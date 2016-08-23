@@ -121,66 +121,72 @@ size_t DistributedField::offset() const {
     size_t result = 0;
 
     // compress data
-    SK_TODO;
-#if 0
-    // TODO move next two lines to resetChunks!
-    data ++= newData
-    newData.clear()
+    {
+        // TODO move this block to resetChunks!
+        size_t i = data.size;
+        data.resize(i + newData.size());
 
-    val target = owner.data
-    dataChunks.last match {
-            case c : SimpleChunk =>
-            var i = c.bpo.toInt
-            val high = i + c.count
-            while (i != high) {
-                result += t.offset(data(target(i).asInstanceOf[Obj]))
-                i += 1
-            }
-            case bci : BulkChunk =>
-            val blocks = owner.blocks
-            var blockIndex = 0
-            while (blockIndex < bci.blockCount) {
-                val b = blocks(blockIndex)
-                blockIndex += 1
-                var i = b.bpo
-                val end = i + b.dynamicCount
-                while (i != end) {
-                    result += t.offset(data(target(i).asInstanceOf[Obj]))
-                    i += 1
-                }
-            }
+        // TODO honestly, there is no reason to assume that objects occur in ascending ID ranges;)
+        for (const auto &b : newData)
+            data[i++] = b.second;
+
+        newData.clear();
     }
-#endif
+
+    if (dynamic_cast<const ::skill::internal::SimpleChunk *>(dataChunks.back())) {
+        // case c : SimpleChunk =>
+        const SimpleChunk *c = (const SimpleChunk *) dataChunks.back();
+        auto i = c->bpo;
+        const auto end = i + c->count;
+        while (i != end) {
+            result += type->offset(data[i++]);
+        }
+
+    } else {
+        // case bci : BulkChunk =>
+        const BulkChunk *bci = (const BulkChunk *) dataChunks.back();
+        const auto &blocks = owner->blocks;
+        int blockIndex = 0;
+        while (blockIndex < bci->blockCount) {
+            const auto &b = blocks[blockIndex];
+            blockIndex++;
+
+            auto i = b.bpo;
+            const auto end = i + b.dynamicCount;
+            while (i != end) {
+                result += type->offset(data[i++]);
+            }
+        }
+    }
+
     return result;
 }
 
 void DistributedField::write(streams::MappedOutStream *out) const {
-    SK_TODO;
-#if 0
-    val target = owner.data
-    dataChunks.last match {
-      case c : SimpleChunk =>
-        var i = c.bpo.toInt
-        val high = i + c.count
-        while (i != high) {
-          t.write(data(target(i).asInstanceOf[Obj]), out)
-          i += 1
+    if (dynamic_cast<const ::skill::internal::SimpleChunk *>(dataChunks.back())) {
+        // case c : SimpleChunk =>
+        const SimpleChunk *c = (const SimpleChunk *) dataChunks.back();
+
+        auto i = c->bpo;
+        const auto end = i + c->count;
+        while (i != end) {
+            type->write(out, data[i++]);
         }
-      case bci : BulkChunk =>
-        val blocks = owner.blocks
-        var blockIndex = 0
-        while (blockIndex < bci.blockCount) {
-          val b = blocks(blockIndex)
-          blockIndex += 1
-          var i = b.bpo
-          val end = i + b.dynamicCount
-          while (i != end) {
-            t.write(data(target(i).asInstanceOf[Obj]), out)
-            i += 1
-          }
+
+    } else {
+        // case bci : BulkChunk =>
+        const BulkChunk *bci = (const BulkChunk *) dataChunks.back();
+        const auto &blocks = owner->blocks;
+        int blockIndex = 0;
+        while (blockIndex < bci->blockCount) {
+            const auto &b = blocks[blockIndex];
+            blockIndex++;
+
+            auto i = b.bpo;
+            const auto end = i + b.dynamicCount;
+            while (i != end) {
+                type->write(out, data[i++]);
+            }
         }
     }
-#endif
-
-    delete out;
 }

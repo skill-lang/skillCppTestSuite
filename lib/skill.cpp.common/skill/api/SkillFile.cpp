@@ -46,8 +46,15 @@ void SkillFile::check() {
             }
 }
 
+void SkillFile::changePath(std::string path) {
+    if(mode == write){
+        currentWritePath = path;
+    } else
+        throw std::invalid_argument("target path can only be changed in write mode");
+}
+
 const std::string &SkillFile::currentPath() {
-    return fromFile->getPath();
+    return currentWritePath;
 }
 
 

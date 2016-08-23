@@ -31,13 +31,13 @@ namespace skill {
         protected:
             FieldDeclaration(const FieldType *const type, api::String const name, const TypeID index,
                              AbstractStoragePool *const owner)
-                    : AbstractField(type, name), index(index), owner(owner) { }
+                    : AbstractField(type, name), index(index), owner(owner) {}
 
             inline SkillException ParseException(long position, long begin, long end, const std::string &msg) {
                 std::stringstream message;
                 message << "ParseException while parsing field.\n Position" << position
-                << "\n inside " << begin << ", " << end << "\n reason: "
-                << msg << std::endl;
+                        << "\n inside " << begin << ", " << end << "\n reason: "
+                        << msg << std::endl;
                 return SkillException(message.str());
             }
 
@@ -71,6 +71,9 @@ namespace skill {
             //! TODO replace by fixed async code
             size_t awaitOffset;
 
+            /**
+             * write data belonging to this field to the stream
+             */
             virtual void write(streams::MappedOutStream *out) const = 0;
 
         public:

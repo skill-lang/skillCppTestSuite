@@ -69,6 +69,11 @@ namespace skill {
             streams::FileInputStream *const fromFile;
 
             /**
+             * our current path to write to
+             */
+            std::string currentWritePath;
+
+            /**
              * current mode of this file
              */
             WriteMode mode;
