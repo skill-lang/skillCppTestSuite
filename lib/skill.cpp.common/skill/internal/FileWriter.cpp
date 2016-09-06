@@ -54,9 +54,16 @@ void FileWriter::write(api::SkillFile *state, const std::string &path) {
     //  check consistency of the state, now that we aggregated all instances
     state->check();
 
-    for (auto t : *state) {
-        if (nullptr == t->superPool)
-            t->compress(lbpoMap.get());
+    {
+        std::vector<AbstractStoragePool *> bases;
+        for (auto t : *state)
+            if (nullptr == t->superPool)
+                bases.push_back(t);
+
+#pragma omp parallel for
+        for (size_t i = 0; i < bases.size(); i++) {
+            bases[i]->compress(lbpoMap.get());
+        }
     }
 
     ////////////////////

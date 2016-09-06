@@ -77,6 +77,13 @@ namespace skill {
             virtual void write(streams::MappedOutStream *out) const = 0;
 
         public:
+            /**
+             * @return true, iff there are checked restrictions
+             */
+            bool hasRestrictions() {
+                return 0 != checkedRestrictions.size();
+            }
+
             void addRestriction(const restrictions::FieldRestriction *r);
 
             /**

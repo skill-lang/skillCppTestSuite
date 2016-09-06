@@ -281,6 +281,14 @@ namespace skill {
                 return r;
             }
 
+            template<typename T>
+            uint64_t offset(api::Array<T> *target) const {
+                uint64_t rval = 0;
+                for (size_t i = 0; i < length; i++)
+                    rval += this->base->offset(target->get(i));
+                return rval;
+            }
+
             virtual uint64_t offset(const api::Box &target) const {
                 uint64_t rval = 0;
                 for (size_t i = 0; i < length; i++)
@@ -360,11 +368,29 @@ namespace skill {
                 return r;
             }
 
+            template<typename T>
+            uint64_t offset(api::Array<T> *target) const {
+                uint64_t rval = V64FieldType::offset((int64_t) target->length());
+                for (size_t i = 0; i < target->length(); i++)
+                    rval += this->base->offset(target->get(i));
+                return rval;
+            }
+
             virtual uint64_t offset(const api::Box &target) const {
                 uint64_t rval = V64FieldType::offset((int64_t) target.list->length());
                 for (size_t i = 0; i < target.list->length(); i++)
                     rval += this->base->offset(target.list->get(i));
                 return rval;
+            }
+
+            template<typename T>
+            void write(streams::MappedOutStream *out, api::Array<T> *target) const {
+                const size_t length = target->length();
+                out->v64(length);
+                for (size_t i = 0; i < length; i++) {
+                    auto v = target->get(i);
+                    this->base->write(out, v);
+                }
             }
 
             virtual void write(streams::MappedOutStream *out, api::Box &target) const {

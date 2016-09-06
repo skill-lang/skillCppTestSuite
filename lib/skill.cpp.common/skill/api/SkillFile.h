@@ -13,6 +13,10 @@
 #include "StringAccess.h"
 
 namespace skill {
+    namespace internal {
+        class FileWriter;
+    }
+
     namespace api {
 
         enum ReadMode {
@@ -37,6 +41,8 @@ namespace skill {
          * spec independent public API for skill files
          */
         class SkillFile {
+            friend class skill::internal::FileWriter;
+
         public:
             api::StringAccess *const strings;
         protected:

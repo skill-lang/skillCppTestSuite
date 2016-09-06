@@ -7,6 +7,8 @@
 #include "../internal/FileWriter.h"
 #include "../streams/FileOutputStream.h"
 
+#include <atomic>
+
 using namespace skill;
 using namespace api;
 using namespace internal;
@@ -31,23 +33,38 @@ SkillFile::~SkillFile() {
 }
 
 void SkillFile::check() {
+    // TODO lacks type and unknown restrictions
 
-    // TODO par
-    // TODO a more efficient solution would be helpful
-    // TODO lacks type restrictions
-    // @note this should be more like, each pool is checking its type restriction, aggergating its field restrictions,
+    // collected checked fields
+    std::vector<FieldDeclaration *> fields;
+    for (size_t i = 0; i < typesByName->size(); i++) {
+        const auto p = types[i];
+        for (size_t j = 0; j < p->dataFields.size(); j++) {
+            const auto f = p->dataFields[j];
+            if (f->hasRestrictions())
+                fields.push_back(f);
+        }
+    }
+
+    std::atomic<bool> failed;
+    failed = false;
+
+    // @note this should be more like, each pool is checking its type restriction, aggregating its field restrictions,
     // and if there are any, then they will all be checked using (hopefully) overridden check methods
-    for (const auto &p : *this)
-        for (const auto &f : p->dataFields)
-            if (!f->check()) {
-                std::stringstream message;
-                message << "check failed in " << *p->name << "." << *f->name << std::endl;
-                throw SkillException(message.str());
-            }
+#pragma omp parallel for
+    for (size_t i = 0; i < fields.size(); i++) {
+        const auto f = fields[i];
+        if (!f->check()) {
+            failed = true;
+        }
+    }
+
+    if (failed)
+        throw SkillException("check failed");
 }
 
 void SkillFile::changePath(std::string path) {
-    if(mode == write){
+    if (mode == write) {
         currentWritePath = path;
     } else
         throw std::invalid_argument("target path can only be changed in write mode");
