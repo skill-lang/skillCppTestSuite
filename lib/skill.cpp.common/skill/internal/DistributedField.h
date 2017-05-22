@@ -16,7 +16,7 @@ namespace skill {
         protected:
             // data held as in storage pools
             // @note see paper notes for O(1) implementation
-            mutable streams::SparseArray<api::Box> data; //Array[T]()
+            mutable streams::SparseArray<api::Box> data;
             mutable std::unordered_map<const api::Object *, api::Box> newData;
 
         public:
@@ -25,6 +25,8 @@ namespace skill {
                     : FieldDeclaration(type, name, index, owner), data(), newData() { }
 
             virtual ~DistributedField();
+
+            virtual void resetChunks(SKilLID newSize, SKilLID i);
 
             virtual api::Box getR(const api::Object *i);
 

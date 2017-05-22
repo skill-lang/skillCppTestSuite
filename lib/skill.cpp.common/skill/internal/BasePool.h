@@ -33,6 +33,10 @@ namespace skill {
                 for (const auto &p : iterators::TypeHierarchyIterator(this)) {
                     lbpoMap[p.poolOffset()] = next;
                     next += p.staticSize() - p.deletedCount;
+
+                    // reset data chunks
+                    for (auto f : p.dataFields)
+                        f->resetChunks(lbpoMap[p.poolOffset()], p.cachedSize);
                 }
 
                 auto tmp = this->data;
@@ -49,7 +53,10 @@ namespace skill {
                 }
                 delete[] (1 + this->data);
                 this->data = d;
-                this->updateAfterCompress(lbpoMap);
+
+                for (auto& p : iterators::TypeHierarchyIterator(this)) {
+                    const_cast<AbstractStoragePool&>(p).updateAfterCompress(lbpoMap);
+                }
             }
         };
     }

@@ -269,11 +269,16 @@ namespace skill {
             virtual api::Box read(streams::InStream &in) const;
 
             virtual uint64_t offset(const api::Box &target) const {
-                return fieldTypes::V64FieldType::offset(target.annotation->id);
+                const auto v = target.annotation;
+                return v ? fieldTypes::V64FieldType::offset(v->id) : 1;
             }
 
             virtual void write(streams::MappedOutStream *out, api::Box &target) const {
-                out->v64(target.annotation->id);
+                const auto v = target.annotation;
+                if (v)
+                    out->v64(target.annotation->id);
+                else
+                    out->i8(0);
             }
 
             /**

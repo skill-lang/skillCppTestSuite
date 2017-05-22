@@ -29,8 +29,9 @@ void LazyField::read(const streams::MappedInStream *in, const Chunk *target) {
 }
 
 void LazyField::load() {
-    new(&data) streams::SparseArray<api::Box>((size_t) owner->basePool->size(),
-                                              !owner->superPool);
+    if (!data.p)
+        new(&data) streams::SparseArray<api::Box>((size_t) owner->basePool->size(),
+                                                  owner->blocks.size() <= 1 && !owner->blocks[0].bpo);
 
     for (const auto &e : *parts) {
         const auto &target = e.first;

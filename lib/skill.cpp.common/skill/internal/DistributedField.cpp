@@ -4,6 +4,7 @@
 
 #include "DistributedField.h"
 #include "AbstractStoragePool.h"
+#include "StoragePool.h"
 
 using namespace skill;
 using namespace internal;
@@ -21,7 +22,7 @@ void DistributedField::setR(api::Object *i, api::Box v) {
 void DistributedField::read(const streams::MappedInStream *part, const Chunk *target) {
     if (!data.p)
         new(&data) streams::SparseArray<api::Box>((size_t) owner->basePool->size(),
-                                                  !owner->superPool);
+                                                  owner->blocks.size() <= 1 && !owner->blocks[0].bpo);
 
     skill::streams::MappedInStream in(part, target->begin, target->end);
 
@@ -120,19 +121,6 @@ DistributedField::~DistributedField() {
 size_t DistributedField::offset() const {
     size_t result = 0;
 
-    // compress data
-    {
-        // TODO move this block to resetChunks!
-        size_t i = data.size;
-        data.resize(i + newData.size());
-
-        // TODO honestly, there is no reason to assume that objects occur in ascending ID ranges;)
-        for (const auto &b : newData)
-            data[i++] = b.second;
-
-        newData.clear();
-    }
-
     if (dynamic_cast<const ::skill::internal::SimpleChunk *>(dataChunks.back())) {
         // case c : SimpleChunk =>
         const SimpleChunk *c = (const SimpleChunk *) dataChunks.back();
@@ -189,4 +177,58 @@ void DistributedField::write(streams::MappedOutStream *out) const {
             }
         }
     }
+}
+
+/**
+ * @note this method is invoked _before_ object IDs get reassigned!
+ *
+ * @todo append is not implemented, because there is no way to test it, yet.
+ *
+ * @todo implementation of append may require a second parameter (bool isAppend)
+ *
+ * @todo ignores deletes!
+ */
+void DistributedField::resetChunks(SKilLID lbpo, SKilLID newSize) {
+// @note we cannot delete objects and we will always write
+    // therefore, new IDs will be data ++ newData matching exactly the pool's last block
+
+
+    // update internal (requires old block structure, so that's the first action)
+    {
+        // create new data on the stack
+        streams::SparseArray<api::Box> d((size_t) (lbpo + newSize), !lbpo);
+
+        // update data -> d
+        size_t newI = (size_t) lbpo;
+        {
+            // todo subtract deleted objects on implementation of delete
+            size_t newEnd = (size_t) (lbpo);
+            for (const auto *chunk : dataChunks) {
+                newEnd += chunk->count;
+            }
+            auto iter = ((StoragePool<Object, Object>*)owner)->allInTypeOrder();
+            while(newI < newEnd) {
+                assert(iter.hasNext());
+                d[newI++] = data[iter.next()->id-1];
+            }
+        }
+
+        // update newData -> d
+        {
+            const size_t newEnd = (size_t) (lbpo + newSize);
+            while (newI < newEnd) {
+                d[newI] = newData[owner->getAsAnnotation(newI)];
+                newI++;
+            }
+            newData.clear();
+        }
+
+        // move d -> data
+        data.resize(d);
+
+        // prevent deallocation of d's content as it is by now owned by data
+        new(&d) streams::SparseArray<api::Box>;
+    }
+
+    FieldDeclaration::resetChunks(newSize, 0);
 }

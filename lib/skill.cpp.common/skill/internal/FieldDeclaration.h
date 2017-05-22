@@ -51,7 +51,7 @@ namespace skill {
                 dataChunks.push_back(c);
             }
 
-            virtual void resetChunks(SKilLID newSize) {
+            virtual void resetChunks(SKilLID lbpo, SKilLID newSize) {
                 for (auto c : dataChunks)
                     delete c;
                 dataChunks.clear();

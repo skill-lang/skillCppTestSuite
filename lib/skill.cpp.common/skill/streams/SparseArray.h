@@ -8,6 +8,7 @@
 #include "../utils.h"
 
 #include <cstddef>
+#include <sys/mman.h>
 
 namespace skill {
     namespace streams {
@@ -15,55 +16,70 @@ namespace skill {
         /**
          * creates a fixed size sparse array using a private memory mapping to a temporary file
          *
+         * @note cannot be used if T-instances require initialization
+         *
          * @author Timm Felden
          */
         template<typename T>
         struct SparseArray {
         private:
-            SparseArray(T *p, size_t size)
-                    : p(p), size(size) {}
+            SparseArray(T *p, size_t size, bool isPrivateMap)
+                    : p(p), size(size), isPrivateMap(isPrivateMap) {}
 
         public:
             //! construct in an invalid state
-            SparseArray() : p(nullptr), size(0) {}
+            SparseArray() : p(nullptr), size(0), isPrivateMap(false) {}
 
             /**
              * @param size
              *      the desired size of the array
              *
-             * @param dense
+             * @param contiguous
              *      if set to true, the representation will likely be an actual array
-             *
-             *      @todo instead of using private map one could also add bpo and shift the base pointer respectively.
-             *      We would get same access time and little storage overhead, as little fields should be scattered over
-             *      multiple blocks in most use-cases.
              */
-            SparseArray(size_t size, bool dense = false) : p(nullptr), size(size) {
+            SparseArray(size_t size, bool contiguous = false) : p(nullptr), size(size), isPrivateMap(false) {
                 // represent small and dense arrays by arrays
-                if (dense || (sizeof(T) * size) < 4096L)
-                    new(this) SparseArray(new T[size], size);
+                if (contiguous || (sizeof(T) * size) < 4096L)
+                    new(this) SparseArray(new T[size], size, false);
                 else {
-                    throw "TODO";
+                    new(this) SparseArray(
+                            (T *) mmap(nullptr, sizeof(T) * size, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1,
+                                       0),
+                            size, true);
                 }
             }
 
             ~SparseArray() {
-                if (p)
-                    delete[] p;
+                if (p) {
+                    if (isPrivateMap) {
+                        munmap(p, sizeof(T) * size);
+                    } else {
+                        delete[] p;
+                    }
+                }
             }
 
             /**
              * changes the size of the sparse array
              */
-            void resize(size_t newSize) {
-                if (size == newSize)
-                    return;
-
-                SK_TODO;
+            void resize(SparseArray<T> &newData) {
+                //we cannot delete this directly, as it might be stack-local
+                if (p) {
+                    if (isPrivateMap) {
+                        munmap(p, sizeof(T) * size);
+                    } else {
+                        delete[] p;
+                    }
+                }
+                new(this)SparseArray<T>(newData.p, newData.size, newData.isPrivateMap);
             }
 
             T *const p;
             const size_t size;
+        private:
+            const bool isPrivateMap;
+
+        public:
 
             inline T &operator[](size_t i) const {
                 return p[i];

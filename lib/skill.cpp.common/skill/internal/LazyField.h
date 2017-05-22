@@ -23,9 +23,14 @@ namespace skill {
             LazyField(const FieldType *const type, const api::string_t *name,
                       const TypeID index, AbstractStoragePool *const owner)
                     : DistributedField(type, name, index, owner),
-                      parts(new std::map<const Chunk *, streams::MappedInStream *>) { }
+                      parts(new std::map<const Chunk *, streams::MappedInStream *>) {}
 
             virtual ~LazyField();
+
+            virtual void resetChunks(SKilLID lbpo, SKilLID newSize) {
+                ensureIsLoaded();
+                DistributedField::resetChunks(lbpo, newSize);
+            }
 
             inline void ensureIsLoaded() {
                 if (!isLoaded())
