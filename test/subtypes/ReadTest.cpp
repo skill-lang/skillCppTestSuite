@@ -4,7 +4,7 @@
 
 using ::subtypes::api::SkillFile;
 
-struct Visitor : public subtypes::api::AVisitor {
+struct Visitor : public subtypes::api::Visitor {
     std::string s;
 
     virtual void visit(subtypes::A *node) {
