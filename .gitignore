@@ -2,5 +2,13 @@
 src/
 test/*/generic*.cpp
 
+# binary
+runTests
+
 # clion
 .idea
+
+# cmake artifacts
+CMake[^L]*
+*cmake*
+Makefile
