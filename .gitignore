@@ -2,8 +2,9 @@
 src/
 test/*/generic*.cpp
 
-# binary
+# binaries
 runTests
+lib/**/*.a
 
 # clion
 .idea
