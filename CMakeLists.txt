@@ -41,7 +41,7 @@ file(GLOB_RECURSE SOURCE_FILES LIST_DIRECTORIES false src/*.cpp)
 #actual tests
 file(GLOB_RECURSE TEST_FILES LIST_DIRECTORIES false test/*.cpp)
 #JSON tests
-file(GLOB_RECURSE SOURCE_FILES LIST_DIRECTORIES false testsuites_src/*.cpp)
+file(GLOB_RECURSE SOURCE_FILES LIST_DIRECTORIES false testsuites_headers/*.cpp)
 file(GLOB_RECURSE TEST_FILES LIST_DIRECTORIES false testsuites/*.cpp)
 
 add_executable(runTests ${SOURCE_FILES} ${TEST_FILES})
