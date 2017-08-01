@@ -13,3 +13,6 @@ lib/**/*.a
 CMake[^L]*
 *cmake*
 Makefile
+
+# doxygen artifacts
+doc/\%*
