@@ -8,6 +8,7 @@
 #include "../streams/FileOutputStream.h"
 
 #include <atomic>
+#include <iostream>
 
 using namespace skill;
 using namespace api;
@@ -55,6 +56,7 @@ void SkillFile::check() {
     for (size_t i = 0; i < fields.size(); i++) {
         const auto f = fields[i];
         if (!f->check()) {
+            std::cerr << "Restriction check failed for " << *(f->owner->name) << "." << *(f->name) << std::endl;
             failed = true;
         }
     }
