@@ -283,8 +283,8 @@ namespace skill {
 
             template<typename T>
             uint64_t offset(api::Array<T> *target) const {
-                if (nullptr == target)
-                    return 0;
+                if (nullptr == target || target->size() != length)
+                    throw SkillException("illegal value for constant length array.");
 
                 uint64_t rval = 0;
                 for (size_t i = 0; i < length; i++)
@@ -293,8 +293,8 @@ namespace skill {
             }
 
             virtual uint64_t offset(const api::Box &target) const {
-                if (nullptr == target.array)
-                    return 0;
+                if (nullptr == target.array || target.array->length() != length)
+                    throw SkillException("illegal value for constant length array.");
 
                 uint64_t rval = 0;
                 for (size_t i = 0; i < length; i++)
@@ -534,14 +534,14 @@ namespace skill {
             virtual void write(streams::MappedOutStream *out, api::Box &target) const {
                 if (nullptr == target.map) {
                     out->i8(0);
-                }
-
-                out->v64(target.map->length());
-                auto it = target.map->all();
-                while (it->hasNext()) {
-                    auto p = it->next();
-                    this->key->write(out, p.first);
-                    this->value->write(out, p.second);
+                } else {
+                    out->v64(target.map->length());
+                    auto it = target.map->all();
+                    while (it->hasNext()) {
+                        auto p = it->next();
+                        this->key->write(out, p.first);
+                        this->value->write(out, p.second);
+                    }
                 }
             }
 

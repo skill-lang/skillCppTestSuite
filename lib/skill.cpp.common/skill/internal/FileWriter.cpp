@@ -2,6 +2,7 @@
 // Created by Timm Felden on 03.02.16.
 //
 
+#include <iostream>
 #include "FileWriter.h"
 #include "../api/SkillFile.h"
 #include "LazyField.h"
@@ -75,10 +76,20 @@ void FileWriter::write(api::SkillFile *state, const std::string &path) {
 
     // Calculate Offsets
     // @note this has to happen after string IDs have been updated
+    {
+        bool failed = false;
 #pragma omp parallel for schedule(dynamic, 4)
-    for (size_t i = 0; i < fieldQueue.size(); i++) {
-        FieldDeclaration *f = fieldQueue[i];
-        f->awaitOffset = f->offset();
+        for (size_t i = 0; i < fieldQueue.size(); i++) {
+            FieldDeclaration *f = fieldQueue[i];
+            try {
+                f->awaitOffset = f->offset();
+            } catch (SkillException e) {
+                failed = true;
+                std::cerr << e.message << std::endl;
+            }
+        }
+        if(failed)
+            throw SkillException("offset calculation failed");
     }
 
     // write count of the type block
