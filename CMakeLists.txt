@@ -25,12 +25,6 @@ if (OPENMP_FOUND)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
-################################
-# jsoncpp
-################################
-include_directories(lib/jsoncpp/dist)
-add_library(jsoncpp lib/jsoncpp/dist/jsoncpp.cpp)
-
 
 ################################
 # Unit Tests
@@ -40,14 +34,11 @@ add_library(jsoncpp lib/jsoncpp/dist/jsoncpp.cpp)
 file(GLOB_RECURSE SOURCE_FILES LIST_DIRECTORIES false src/*.cpp)
 #actual tests
 file(GLOB_RECURSE TEST_FILES LIST_DIRECTORIES false test/*.cpp)
-#JSON tests
-file(GLOB_RECURSE SOURCE_FILES LIST_DIRECTORIES false testsuites_headers/*.cpp)
-file(GLOB_RECURSE TEST_FILES LIST_DIRECTORIES false testsuites/*.cpp)
 
 add_executable(runTests ${SOURCE_FILES} ${TEST_FILES})
 
 # Link test executable against gtest & gtest_main
-target_link_libraries(runTests skill.cpp.common gtest gtest_main jsoncpp)
+target_link_libraries(runTests skill.cpp.common gtest gtest_main)
 add_test(runTests runTests)
 
 set_property(TARGET runTests PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
