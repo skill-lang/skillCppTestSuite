@@ -99,7 +99,7 @@ namespace skill {
 
             T &operator*() const { return *is; }
 
-            T &operator->() const { return *is; }
+            T* operator->() const { return is.operator->(); }
 
             //!iterators themselves can be used in generalized for loops
             //!@note this will not consume the iterator

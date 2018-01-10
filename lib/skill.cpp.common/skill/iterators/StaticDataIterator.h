@@ -147,8 +147,8 @@ namespace skill {
                 return *(secondIndex <= lastBlock ? p->data[index + 1] : p->newObjects[index]);
             }
 
-            T &operator->() const {
-                return *(secondIndex <= lastBlock ? p->data[index + 1] : p->newObjects[index]);
+            T* operator->() const {
+                return secondIndex <= lastBlock ? p->data[index + 1] : p->newObjects[index];
             }
 
             //!iterators themselves can be used in generalized for loops

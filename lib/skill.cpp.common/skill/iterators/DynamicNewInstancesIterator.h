@@ -166,9 +166,9 @@ namespace skill {
                 return *(index < end ? p.data[index + 1] : p.newObjects[secondIndex]);
             }
 
-            T &operator->() const {
+            T* operator->() const {
                 const StoragePool<T, B> &p = (const StoragePool<T, B> &) *ts;
-                return *(index < end ? p.data[index + 1] : p.newObjects[secondIndex]);
+                return index < end ? p.data[index + 1] : p.newObjects[secondIndex];
             }
         };
     }

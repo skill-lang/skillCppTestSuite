@@ -32,14 +32,14 @@ namespace skill {
 
             virtual api::Object &operator*() const = 0;
 
-            virtual api::Object &operator->() const = 0;
+            virtual api::Object* operator->() const = 0;
 
             template<class T, class B>
             class Implementation;
         };
 
         /**
-         * implementation of AllObjectIterator requires template arugments.
+         * implementation of AllObjectIterator requires template arguments.
          *
          * @author Timm Felden
          */
@@ -73,7 +73,7 @@ namespace skill {
 
             virtual api::Object &operator*() const { return *iter; }
 
-            virtual api::Object &operator->() const { return *iter; }
+            virtual api::Object* operator->() const { return iter.operator->(); }
         };
     }
 }

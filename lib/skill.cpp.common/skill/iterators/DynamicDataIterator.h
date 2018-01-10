@@ -190,9 +190,9 @@ namespace skill {
                 return *(secondIndex <= lastBlock ? p.data[index + 1] : p.newObjects[index]);
             }
 
-            T &operator->() const {
+            T* operator->() const {
                 const StoragePool<T, B> &p = (const StoragePool<T, B> &) *ts;
-                return *(secondIndex <= lastBlock ? p.data[index + 1] : p.newObjects[index]);
+                return secondIndex <= lastBlock ? p.data[index + 1] : p.newObjects[index];
             }
 
             //!iterators themselves can be used in generalized for loops

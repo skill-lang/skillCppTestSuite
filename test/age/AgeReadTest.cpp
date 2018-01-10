@@ -33,6 +33,31 @@ TEST(AgeReadTest, ReadAgeForachAPI) {
     ASSERT_EQ(0, *as) << "less or more as then expected";
 }
 
+TEST(AgeReadTest, ReadAgeForachIterator) {
+    auto sf = std::unique_ptr<SkillFile>(
+            SkillFile::open("../../src/test/resources/genbinary/[[empty]]/accept/ageUnrestricted.sf"));
+    ASSERT_EQ(2, sf->Age->size());
+    const char *as = "\x01\x1c";
+    for (const auto& age : sf->Age->all()) {
+        ASSERT_EQ(*as++, age.getAge()) << "found wrong age";
+    }
+    ASSERT_EQ(0, *as) << "less or more as then expected";
+}
+
+TEST(AgeReadTest, ReadAgeWhileIterator) {
+    auto sf = std::unique_ptr<SkillFile>(
+            SkillFile::open("../../src/test/resources/genbinary/[[empty]]/accept/ageUnrestricted.sf"));
+    ASSERT_EQ(2, sf->Age->size());
+    const char *as = "\x01\x1c";
+
+    auto vs = sf->Age->begin();
+    while(vs.hasNext()) {
+        auto v = vs.next();
+        ASSERT_EQ(*as++, v->getAge()) << "found wrong age";
+    }
+    ASSERT_EQ(0, *as) << "less or more as then expected";
+}
+
 TEST(AgeReadTest, ReadAgeCheckTypes) {
     auto sf = std::unique_ptr<SkillFile>(
             SkillFile::open("../../src/test/resources/genbinary/[[empty]]/accept/ageUnrestricted.sf"));

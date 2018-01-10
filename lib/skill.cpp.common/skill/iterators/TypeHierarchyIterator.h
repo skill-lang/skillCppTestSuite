@@ -76,7 +76,7 @@ namespace skill {
 
             const AbstractStoragePool &operator*() const { return *current; }
 
-            const AbstractStoragePool &operator->() const { return *current; }
+            const AbstractStoragePool* operator->() const { return current; }
 
             //!iterators themselves can be used in generalized for loops
             //!@note this will not consume the iterator
