@@ -9,6 +9,8 @@
 
 namespace skill {
     namespace internal {
+        class FieldDeclaration;
+
         class DistributedField;
 
         class LazyField;
@@ -35,7 +37,10 @@ namespace skill {
             class internal::BasePool;
 
             template<typename T>
-            friend struct std::hash;
+            friend
+            struct std::hash;
+
+            friend class internal::FieldDeclaration;
 
             friend class internal::DistributedField;
 
@@ -47,10 +52,10 @@ namespace skill {
             SKilLID id;
 
             //! bulk allocation
-            Object() { }
+            Object() {}
 
             //! actual constructor
-            Object(SKilLID id) : id(id) { }
+            Object(SKilLID id) : id(id) {}
 
         public:
             /**

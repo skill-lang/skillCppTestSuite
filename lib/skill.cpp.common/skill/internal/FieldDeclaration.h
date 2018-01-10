@@ -41,6 +41,10 @@ namespace skill {
                 return SkillException(message.str());
             }
 
+            inline SKilLID skillID(const api::Object* ref) const {
+                return ref->id;
+            }
+
         public:
             virtual ~FieldDeclaration();
 
