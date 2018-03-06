@@ -6,7 +6,7 @@
 #define SKILL_CPP_COMMON_SKILLFILE_H
 
 #include <unordered_map>
-#include <bits/unique_ptr.h>
+#include <memory>
 #include "String.h"
 #include "../internal/AbstractStoragePool.h"
 #include "../streams/FileInputStream.h"

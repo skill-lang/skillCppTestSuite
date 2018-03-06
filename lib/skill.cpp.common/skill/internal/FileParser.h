@@ -21,7 +21,10 @@
 #include <string>
 #include <iostream>
 #include <cassert>
+
+#if defined(_OPENMP)
 #include <omp.h>
+#endif
 
 /**
  * set to 1, to enable debug output; this should be disabled on all commits
