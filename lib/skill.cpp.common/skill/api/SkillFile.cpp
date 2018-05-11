@@ -72,7 +72,7 @@ void SkillFile::changePath(std::string path) {
         throw std::invalid_argument("target path can only be changed in write mode");
 }
 
-const std::string &SkillFile::currentPath() {
+const std::string &SkillFile::currentPath() const {
     return currentWritePath;
 }
 

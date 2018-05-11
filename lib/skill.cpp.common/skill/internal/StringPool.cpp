@@ -33,6 +33,18 @@ String internal::StringPool::add(const char *target) {
     }
 }
 
+String internal::StringPool::add(const char *target, int length) {
+    String result = new string_t(target, length, -1);
+    auto it = knownStrings.find(result);
+    if (it != knownStrings.end()) {
+        delete result;
+        return *it;
+    } else {
+        knownStrings.insert(result);
+        return result;
+    }
+}
+
 String internal::StringPool::addLiteral(const char *target) {
     String result = new string_t(target);
     assert(knownStrings.find(result) == knownStrings.end());

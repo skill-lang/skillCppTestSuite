@@ -77,6 +77,13 @@ namespace skill {
             virtual String add(const char *target);
 
             /**
+             * add a string of given length to the pool
+             *
+             * @note this string may contain null characters
+             */
+            virtual String add(const char *target, int length);
+
+            /**
              * add a literal string to the pool. This has the fancy guarantee, that
              * result->c_str() == target.
              *

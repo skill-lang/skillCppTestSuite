@@ -114,7 +114,7 @@ namespace skill {
             /**
              * @return the current path pointing to the file
              */
-            const std::string &currentPath();
+            const std::string &currentPath() const;
 
             /**
              * Set a new mode.

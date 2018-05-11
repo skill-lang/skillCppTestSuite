@@ -18,6 +18,7 @@ namespace skill {
          */
         struct StringAccess : public fieldTypes::BuiltinFieldType<String, 14> {
             virtual String add(const char *target) = 0;
+            virtual String add(const char *target, int length) = 0;
 
             virtual ~StringAccess() { };
         };
