@@ -5,10 +5,11 @@
 #ifndef SKILL_CPP_COMMON_FILEINPUTSTREAM_H
 #define SKILL_CPP_COMMON_FILEINPUTSTREAM_H
 
-#include <string>
-
 #include "InStream.h"
 #include "MappedInStream.h"
+
+#include <string>
+#include <memory>
 
 namespace skill {
     namespace streams {
@@ -18,7 +19,7 @@ namespace skill {
             /**
              * the path where this stream was opened from
              */
-            const std::string *const path;
+            std::unique_ptr<const std::string> path;
 
             /**
              * the file object used for communication to the fs

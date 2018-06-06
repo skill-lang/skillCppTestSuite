@@ -71,7 +71,7 @@ namespace skill {
              *
              * @param target
              *            the object to be deleted
-             * @note we type target using the erasure directly, because the Java type system is too weak to express correct
+             * @note we type target using the erasure directly, because the C++ type system is too weak to express correct
              *       typing, when taking the pool from a map
              */
             inline void free(api::Object *target) {
@@ -169,6 +169,13 @@ namespace skill {
 
         protected:
             SkillFile *owner;
+
+        public:
+            SkillFile *getOwner() const {
+                return owner;
+            }
+
+        protected:
 
             //! called in owner constructor to complete creation of this pool
             virtual void complete(SkillFile *owner);

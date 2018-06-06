@@ -44,7 +44,7 @@ FileInputStream::FileInputStream(const std::string& path, const char *openMode)
         throw SkillException("Execution of function madvise failed.");
 
     // set begin and end
-    new(this) FileInputStream(base, end, this->path, stream);
+    new(this) FileInputStream(base, end, this->path.get(), stream);
 }
 
 FileInputStream::~FileInputStream() {
