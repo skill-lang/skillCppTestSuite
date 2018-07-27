@@ -23,9 +23,7 @@
 #include <cassert>
 
 #if defined(_OPENMP)
-
 #include <omp.h>
-
 #endif
 
 /**
@@ -232,6 +230,8 @@ namespace skill {
                     TypeID blockIDBarrier = 0;
                     std::set<api::String> seenTypes;
 
+                    std::vector<AbstractStoragePool *> resizeQueue;
+
                     // number of fields to expect for that type in this block
                     std::vector<LFEntry> localFields;
 
@@ -342,12 +342,12 @@ namespace skill {
                         definition->blocks.push_back(Block(blockCounter, lbpo, count, count));
                         definition->staticDataInstances += count;
 
+                        resizeQueue.push_back(definition);
                         localFields.push_back(LFEntry(definition, (SKilLID) in->v64()));
                     }
 
                     // resize pools, i.e. update cachedSize and staticCount
-                    for (auto &e : localFields) {
-                        const auto p = e.pool;
+                    for (auto &p : resizeQueue) {
                         const auto &b = p->blocks.back();
                         p->cachedSize += b.dynamicCount;
 

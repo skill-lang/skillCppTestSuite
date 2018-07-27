@@ -33,7 +33,8 @@ namespace skill {
 
         public:
             //! creates an empty iterator
-            TypeOrderIterator() : ts(), is() { }
+            //! @note is is initialized exactly once by the body
+            TypeOrderIterator() : ts() {}
 
             TypeOrderIterator(const StoragePool<T, B> *p)
                     : ts(p), is(p) {
@@ -41,13 +42,16 @@ namespace skill {
                     auto t = (StoragePool<T, B> *) ts.next();
                     if (t->staticSize()) {
                         new(&is) StaticDataIterator<T, B>(t);
-                        break;
+                        return;
                     }
                 }
+                // the iterator is empty, so p is empty as well. Hence, the overall state
+                // is legal in terms of the iterators invariants
+                new(&is) StaticDataIterator<T, B>(p);
             }
 
             TypeOrderIterator(const TypeOrderIterator &iter)
-                    : ts(iter.ts), is(iter.is) { }
+                    : ts(iter.ts), is(iter.is) {}
 
             TypeOrderIterator &operator++() {
                 is.next();
@@ -99,7 +103,7 @@ namespace skill {
 
             T &operator*() const { return *is; }
 
-            T* operator->() const { return is.operator->(); }
+            T *operator->() const { return is.operator->(); }
 
             //!iterators themselves can be used in generalized for loops
             //!@note this will not consume the iterator
