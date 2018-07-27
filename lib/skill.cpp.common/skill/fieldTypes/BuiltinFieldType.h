@@ -145,24 +145,26 @@ namespace skill {
         struct V64FieldType : public StatelessFieldType<int64_t, 11, InStream::v64Box> {
             V64FieldType() : StatelessFieldType<int64_t, 11, InStream::v64Box>() {}
 
-            static uint64_t offset(int v) {
-                return (0L == (v & 0xFFFFFF80L)) ? 1 :
-                       ((0L == (v & 0xFFFFC000L)) ? 2 :
-                        ((0L == (v & 0xFFE00000L)) ? 3 :
-                         ((0L == (v & 0xF0000000L)) ? 4 : 5)
+            static uint64_t offset(int p) {
+                uint32_t v = static_cast<uint32_t>(p);
+                return (v < 0x80U) ? 1 :
+                       ((v < 0x4000U) ? 2 :
+                        ((v < 0x200000U) ? 3 :
+                         ((v < 0x10000000U) ? 4 : 5)
                         )
                        );
             }
 
-            static uint64_t offset(int64_t v) {
-                return (0L == (v & 0xFFFFFFFFFFFFFF80L)) ? 1 :
-                       ((0L == (v & 0xFFFFFFFFFFFFC000L)) ? 2 :
-                        ((0L == (v & 0xFFFFFFFFFFE00000L)) ? 3 :
-                         ((0L == (v & 0xFFFFFFFFF0000000L)) ? 4 :
-                          ((0L == (v & 0xFFFFFFF800000000L)) ? 5 :
-                           ((0L == (v & 0xFFFFFC0000000000L)) ? 6 :
-                            ((0L == (v & 0xFFFE000000000000L)) ? 7 :
-                             ((0L == (v & 0xFF00000000000000L)) ? 8 : 9)
+            static uint64_t offset(int64_t p) {
+                uint64_t v = static_cast<uint64_t>(p);
+                return (v < 0x80U) ? 1 :
+                       ((v < 0x4000U) ? 2 :
+                        ((v < 0x200000U) ? 3 :
+                         ((v < 0x10000000U) ? 4 :
+                          ((v < 0x800000000U) ? 5 :
+                           ((v < 0x40000000000U) ? 6 :
+                            ((v & 0x2000000000000U) ? 7 :
+                             ((v < 0x100000000000000U) ? 8 : 9)
                             )
                            )
                           )
