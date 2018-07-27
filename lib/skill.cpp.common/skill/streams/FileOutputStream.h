@@ -112,54 +112,56 @@ namespace skill {
                 *(position++) = (uint8_t) v;
             }
 
-            inline void i64(int64_t v) {
+            inline void i64(int64_t p) {
+                auto v = static_cast<uint64_t>(p);
                 require(8);
-                *(position++) = (uint8_t) (v >> 56);
-                *(position++) = (uint8_t) (v >> 48);
-                *(position++) = (uint8_t) (v >> 40);
-                *(position++) = (uint8_t) (v >> 32);
-                *(position++) = (uint8_t) (v >> 24);
-                *(position++) = (uint8_t) (v >> 16);
-                *(position++) = (uint8_t) (v >> 8);
+                *(position++) = (uint8_t) (v >> 56u);
+                *(position++) = (uint8_t) (v >> 48u);
+                *(position++) = (uint8_t) (v >> 40u);
+                *(position++) = (uint8_t) (v >> 32u);
+                *(position++) = (uint8_t) (v >> 24u);
+                *(position++) = (uint8_t) (v >> 16u);
+                *(position++) = (uint8_t) (v >> 8u);
                 *(position++) = (uint8_t) v;
             }
 
-            inline void v64(int64_t v) {
+            inline void v64(int64_t p) {
+                auto v = static_cast<uint64_t>(p);
                 require(9);
 
-                if (0L == (v & 0xFFFFFFFFFFFFFF80L)) {
+                if (v < 0x80U) {
                     *(position++) = (uint8_t) (v);
                 } else {
-                    *(position++) = (uint8_t) ((0x80L | v));
-                    if (0L == (v & 0xFFFFFFFFFFFFC000L)) {
-                        *(position++) = (uint8_t) ((v >> 7));
+                    *(position++) = (uint8_t) ((0x80U | v));
+                    if (v < 0x4000U) {
+                        *(position++) = (uint8_t) ((v >> 7u));
                     } else {
-                        *(position++) = (uint8_t) ((0x80L | v >> 7));
-                        if (0L == (v & 0xFFFFFFFFFFE00000L)) {
-                            *(position++) = (uint8_t) ((v >> 14));
+                        *(position++) = (uint8_t) ((0x80U | v >> 7u));
+                        if (v < 0x200000U) {
+                            *(position++) = (uint8_t) ((v >> 14u));
                         } else {
-                            *(position++) = (uint8_t) ((0x80L | v >> 14));
-                            if (0L == (v & 0xFFFFFFFFF0000000L)) {
-                                *(position++) = (uint8_t) ((v >> 21));
+                            *(position++) = (uint8_t) ((0x80U | v >> 14u));
+                            if (v < 0x10000000U) {
+                                *(position++) = (uint8_t) ((v >> 21u));
                             } else {
-                                *(position++) = (uint8_t) ((0x80L | v >> 21));
-                                if (0L == (v & 0xFFFFFFF800000000L)) {
-                                    *(position++) = (uint8_t) ((v >> 28));
+                                *(position++) = (uint8_t) ((0x80U | v >> 21u));
+                                if (v < 0x800000000U) {
+                                    *(position++) = (uint8_t) ((v >> 28u));
                                 } else {
-                                    *(position++) = (uint8_t) ((0x80L | v >> 28));
-                                    if (0L == (v & 0xFFFFFC0000000000L)) {
-                                        *(position++) = (uint8_t) ((v >> 35));
+                                    *(position++) = (uint8_t) ((0x80U | v >> 28u));
+                                    if (v < 0x40000000000U) {
+                                        *(position++) = (uint8_t) ((v >> 35u));
                                     } else {
-                                        *(position++) = (uint8_t) ((0x80L | v >> 35));
-                                        if (0L == (v & 0xFFFE000000000000L)) {
-                                            *(position++) = (uint8_t) ((v >> 42));
+                                        *(position++) = (uint8_t) ((0x80U | v >> 35u));
+                                        if (v & 0x2000000000000U) {
+                                            *(position++) = (uint8_t) ((v >> 42u));
                                         } else {
-                                            *(position++) = (uint8_t) ((0x80L | v >> 42));
-                                            if (0L == (v & 0xFF00000000000000L)) {
-                                                *(position++) = (uint8_t) ((v >> 49));
+                                            *(position++) = (uint8_t) ((0x80U | v >> 42u));
+                                            if (v < 0x100000000000000U) {
+                                                *(position++) = (uint8_t) ((v >> 49u));
                                             } else {
-                                                *(position++) = (uint8_t) ((0x80L | v >> 49));
-                                                *(position++) = (uint8_t) ((v >> 56));
+                                                *(position++) = (uint8_t) ((0x80U | v >> 49u));
+                                                *(position++) = (uint8_t) ((v >> 56u));
                                             }
                                         }
                                     }

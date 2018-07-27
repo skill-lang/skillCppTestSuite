@@ -100,28 +100,28 @@ namespace skill {
             inline int64_t v64() {
                 register uint64_t r, rval;
 
-                if (0 != ((rval = *(position++)) & 0x80)) {
+                if (((rval = *(position++)) >= 0x80)) {
                     rval = (rval & 0x7f) | (((r = *(position++)) & 0x7f) << 7);
 
-                    if (0 != (r & 0x80)) {
+                    if ((r >= 0x80)) {
                         rval |= ((r = *(position++)) & 0x7f) << 14;
 
-                        if (0 != (r & 0x80)) {
+                        if ((r >= 0x80)) {
                             rval |= ((r = *(position++)) & 0x7f) << 21;
 
-                            if (0 != (r & 0x80)) {
+                            if ((r >= 0x80)) {
                                 rval |= ((uint64_t) (r = *(position++)) & 0x7f) << 28;
 
-                                if (0 != (r & 0x80)) {
+                                if ((r >= 0x80)) {
                                     rval |= ((uint64_t) (r = *(position++)) & 0x7f) << 35;
 
-                                    if (0 != (r & 0x80)) {
+                                    if ((r >= 0x80)) {
                                         rval |= ((uint64_t) (r = *(position++)) & 0x7f) << 42;
 
-                                        if (0 != (r & 0x80)) {
+                                        if ((r >= 0x80)) {
                                             rval |= ((uint64_t) (r = *(position++)) & 0x7f) << 49;
 
-                                            if (0 != (r & 0x80)) {
+                                            if ((r >= 0x80)) {
                                                 rval |= (((uint64_t) *(position++)) << 56);
                                             }
                                         }
@@ -141,28 +141,28 @@ namespace skill {
             inline int64_t v64checked() noexcept {
                 register uint64_t r, rval;
 
-                if (0 != ((rval = *(position++)) & 0x80)) {
+                if (((rval = *(position++)) >= 0x80)) {
                     rval = (rval & 0x7f) | (((r = *(position++)) & 0x7f) << 7);
 
-                    if (0 != (r & 0x80)) {
+                    if ((r >= 0x80)) {
                         rval |= ((r = *(position++)) & 0x7f) << 14;
 
-                        if (0 != (r & 0x80)) {
+                        if ((r >= 0x80)) {
                             rval |= ((r = *(position++)) & 0x7f) << 21;
 
-                            if (0 != (r & 0x80)) {
+                            if ((r >= 0x80)) {
                                 rval |= ((uint64_t) (r = *(position++)) & 0x7f) << 28;
 
-                                if (0 != (r & 0x80)) {
+                                if ((r >= 0x80)) {
                                     rval |= ((uint64_t) (r = *(position++)) & 0x7f) << 35;
 
-                                    if (0 != (r & 0x80)) {
+                                    if ((r >= 0x80)) {
                                         rval |= ((uint64_t) (r = *(position++)) & 0x7f) << 42;
 
-                                        if (0 != (r & 0x80)) {
+                                        if ((r >= 0x80)) {
                                             rval |= ((uint64_t) (r = *(position++)) & 0x7f) << 49;
 
-                                            if (0 != (r & 0x80)) {
+                                            if ((r >= 0x80)) {
                                                 rval |= (((uint64_t) *(position++)) << 56);
                                             }
                                         }
