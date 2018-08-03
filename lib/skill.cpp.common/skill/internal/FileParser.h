@@ -15,6 +15,7 @@
 #include "../restrictions/TypeRestriction.h"
 #include "../fieldTypes/BuiltinFieldType.h"
 #include "../fieldTypes/AnnotationType.h"
+#include "LazyField.h"
 
 #include <vector>
 #include <unordered_map>
@@ -541,13 +542,36 @@ namespace skill {
 
                         const int blockIndex = t->blocks[bsIndex++].blockIndex;
                         if (dc->count) {
-                            MappedInStream *in = dataList[blockIndex].get();
+                            MappedInStream *part = dataList[blockIndex].get();
+                            skill::streams::MappedInStream in(part, dc->begin, dc->end);
                             try {
-                                f->read(in, dc);
+                                if (auto c = dynamic_cast<const ::skill::internal::SimpleChunk *>(dc)) {
+                                    int i = c->bpo + 1;
+                                    f->rsc(i, i + c->count, &in);
+                                } else {
+                                    auto bc = dynamic_cast<const ::skill::internal::BulkChunk *>(dc);
+                                    f->rbc(&in, bc);
+                                }
+                                if (!(in.eof() || nullptr != dynamic_cast<::skill::internal::LazyField *>(f))) {
+#pragma omp critical
+                                    {
+                                        std::stringstream message;
+                                        message << "ParseException while parsing field.\n Position"
+                                                << in.getPosition()
+                                                << "\n reason: Did not consume all bytes." << std::endl;
+                                        results.push_back(new std::string(message.str()));
+                                    }
+
+                                };
                             } catch (SkillException e) {
 #pragma omp critical
                                 {
-                                    results.push_back(new std::string(e.message));
+                                    std::stringstream message;
+                                    message << "ParseException while parsing field.\n Position"
+                                            << in.getPosition()
+                                            << "\n reason: "
+                                            << e.message << std::endl;
+                                    results.push_back(new std::string(message.str()));
                                 }
                             } catch (...) {
 #pragma omp critical

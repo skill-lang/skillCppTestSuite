@@ -32,13 +32,11 @@ namespace skill {
 
             virtual void setR(api::Object *i, api::Box v);
 
-            virtual void read(const streams::MappedInStream *in, const Chunk *target);
+            virtual size_t osc() const override;
 
-            virtual size_t offset() const;
+            virtual void wsc(streams::MappedOutStream* out) const override;
 
-            virtual void write(streams::MappedOutStream* out) const;
-
-            virtual bool check() const;
+            virtual bool check() const override;
 
         private:
             // destructor helper method

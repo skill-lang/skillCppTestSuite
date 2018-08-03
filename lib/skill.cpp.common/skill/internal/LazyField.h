@@ -37,13 +37,15 @@ namespace skill {
                     load();
             }
 
-            virtual api::Box getR(const api::Object *i);
+            virtual api::Box getR(const api::Object *i) override;
 
-            virtual void setR(api::Object *i, api::Box v);
+            virtual void setR(api::Object *i, api::Box v) override;
 
-            virtual void read(const streams::MappedInStream *in, const Chunk *target);
+            virtual void rsc(SKilLID i, const SKilLID h, streams::MappedInStream *in) override;
 
-            virtual bool check() const;
+            virtual void rbc(streams::MappedInStream *in, const BulkChunk *target) override;
+
+            virtual bool check() const override;
         };
     }
 }

@@ -23,11 +23,17 @@ namespace skill {
             MappedInStream(void *base, uint8_t *position, void *end);
 
         public:
+            // copy a mapped in stream for later use
+            MappedInStream(const MappedInStream *other)
+                    : InStream(other->base, other->end) {
+                this->position = other->position;
+            }
+
             //! create a view of another mapped stream
             MappedInStream(const MappedInStream *other, size_t begin, size_t end);
 
             //! requires no action; all resources are managed elsewhere
-            ~MappedInStream() { }
+            ~MappedInStream() {}
         };
     }
 }

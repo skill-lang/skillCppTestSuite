@@ -24,8 +24,15 @@ void LazyField::setR(api::Object *i, api::Box v) {
     data[i->id - 1] = v;
 }
 
-void LazyField::read(const streams::MappedInStream *in, const Chunk *target) {
-    (*parts)[target] = new skill::streams::MappedInStream(in, target->begin, target->end);
+void LazyField::rsc(SKilLID i, const SKilLID h, streams::MappedInStream *in) {
+    auto target = new SimpleChunk(i, h, 1, 1);
+    // copy stack local stream for later use
+    (*parts)[target] = new skill::streams::MappedInStream(in);
+}
+
+void LazyField::rbc(streams::MappedInStream *in, const BulkChunk *target) {
+    // copy stack local stream for later use
+    (*parts)[target] = new skill::streams::MappedInStream(in);
 }
 
 void LazyField::load() {

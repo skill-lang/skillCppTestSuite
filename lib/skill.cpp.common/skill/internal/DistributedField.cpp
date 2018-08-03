@@ -19,45 +19,6 @@ void DistributedField::setR(api::Object *i, api::Box v) {
     ((-1 == i->id) ? newData[i] : data[i->id - 1]) = v;
 }
 
-void DistributedField::read(const streams::MappedInStream *part, const Chunk *target) {
-    if (!data.p)
-        new(&data) streams::SparseArray<api::Box>((size_t) owner->basePool->size(),
-                                                  owner->blocks.size() <= 1 && !owner->blocks[0].bpo);
-
-    skill::streams::MappedInStream in(part, target->begin, target->end);
-
-    try {
-        if (dynamic_cast<const SimpleChunk *>(target)) {
-            for (::skill::SKilLID i = ((const ::skill::internal::SimpleChunk *) target)->bpo,
-                         high = i + target->count; i != high; i++)
-                data[i] = type->read(in);
-        } else {
-            //case bci : BulkChunk ⇒
-            for (int i = 0; i < ((const ::skill::internal::BulkChunk *) target)->blockCount; i++) {
-                const auto &b = owner->blocks[i];
-                for (::skill::SKilLID i = b.bpo, end = i + b.dynamicCount; i != end; i++)
-                    data[i] = type->read(in);
-            }
-        }
-    } catch (::skill::SkillException e) {
-        throw ParseException(
-                in.getPosition(),
-                part->getPosition() + target->begin,
-                part->getPosition() + target->end, e.message);
-    } catch (...) {
-        throw ParseException(
-                in.getPosition(),
-                part->getPosition() + target->begin,
-                part->getPosition() + target->end, "unexpected foreign exception");
-    }
-
-    if (!in.eof())
-        throw ParseException(
-                in.getPosition(),
-                part->getPosition() + target->begin,
-                part->getPosition() + target->end, "did not consume all bytes");
-}
-
 bool DistributedField::check() const {
     if (checkedRestrictions.size()) {
         for (const auto &b : owner->blocks)
@@ -118,64 +79,27 @@ DistributedField::~DistributedField() {
     }
 }
 
-size_t DistributedField::offset() const {
+size_t DistributedField::osc() const {
     size_t result = 0;
 
-    if (dynamic_cast<const ::skill::internal::SimpleChunk *>(dataChunks.back())) {
-        // case c : SimpleChunk =>
-        const SimpleChunk *c = (const SimpleChunk *) dataChunks.back();
-        auto i = c->bpo;
-        const auto end = i + c->count;
-        while (i != end) {
-            result += type->offset(data[i++]);
-        }
-
-    } else {
-        // case bci : BulkChunk =>
-        const BulkChunk *bci = (const BulkChunk *) dataChunks.back();
-        const auto &blocks = owner->blocks;
-        int blockIndex = 0;
-        while (blockIndex < bci->blockCount) {
-            const auto &b = blocks[blockIndex];
-            blockIndex++;
-
-            auto i = b.bpo;
-            const auto end = i + b.dynamicCount;
-            while (i != end) {
-                result += type->offset(data[i++]);
-            }
-        }
+    auto c = dynamic_cast<const ::skill::internal::SimpleChunk *>(dataChunks.back());
+    // case c : SimpleChunk =>
+    auto i = c->bpo;
+    const auto end = i + c->count;
+    while (i != end) {
+        result += type->offset(data[i++]);
     }
 
     return result;
 }
 
-void DistributedField::write(streams::MappedOutStream *out) const {
-    if (dynamic_cast<const ::skill::internal::SimpleChunk *>(dataChunks.back())) {
-        // case c : SimpleChunk =>
-        const SimpleChunk *c = (const SimpleChunk *) dataChunks.back();
-
-        auto i = c->bpo;
-        const auto end = i + c->count;
-        while (i != end) {
-            type->write(out, data[i++]);
-        }
-
-    } else {
-        // case bci : BulkChunk =>
-        const BulkChunk *bci = (const BulkChunk *) dataChunks.back();
-        const auto &blocks = owner->blocks;
-        int blockIndex = 0;
-        while (blockIndex < bci->blockCount) {
-            const auto &b = blocks[blockIndex];
-            blockIndex++;
-
-            auto i = b.bpo;
-            const auto end = i + b.dynamicCount;
-            while (i != end) {
-                type->write(out, data[i++]);
-            }
-        }
+void DistributedField::wsc(streams::MappedOutStream *out) const {
+    auto c = dynamic_cast<const ::skill::internal::SimpleChunk *>(dataChunks.back());
+    // case c : SimpleChunk =>
+    auto i = c->bpo;
+    const auto end = i + c->count;
+    while (i != end) {
+        type->write(out, data[i++]);
     }
 }
 
@@ -189,7 +113,7 @@ void DistributedField::write(streams::MappedOutStream *out) const {
  * @todo ignores deletes!
  */
 void DistributedField::resetChunks(SKilLID lbpo, SKilLID newSize) {
-// @note we cannot delete objects and we will always write
+    // @note we cannot delete objects and we will always write
     // therefore, new IDs will be data ++ newData matching exactly the pool's last block
 
 
@@ -206,10 +130,10 @@ void DistributedField::resetChunks(SKilLID lbpo, SKilLID newSize) {
             for (const auto *chunk : dataChunks) {
                 newEnd += chunk->count;
             }
-            auto iter = ((StoragePool<Object, Object>*)owner)->allInTypeOrder();
-            while(newI < newEnd) {
+            auto iter = ((StoragePool<Object, Object> *) owner)->allInTypeOrder();
+            while (newI < newEnd) {
                 assert(iter.hasNext());
-                d[newI++] = data[iter.next()->id-1];
+                d[newI++] = data[iter.next()->id - 1];
             }
         }
 

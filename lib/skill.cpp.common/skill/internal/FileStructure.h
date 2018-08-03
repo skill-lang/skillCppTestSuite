@@ -53,13 +53,13 @@ namespace skill {
          * data segment, instead of buffering each segment itself
          */
         struct Chunk {
-            Chunk(size_t begin, size_t end, SKilLID count)
+            Chunk(SKilLID begin, SKilLID end, SKilLID count)
                     : begin(begin), end(end), count(count) { }
 
             virtual ~Chunk() { }
 
-            size_t begin;
-            size_t end;
+            SKilLID begin;
+            SKilLID end;
             const SKilLID count;
         };
 
@@ -70,7 +70,7 @@ namespace skill {
  */
         struct SimpleChunk : public Chunk {
 
-            SimpleChunk(size_t begin, size_t end, SKilLID count, const SKilLID bpo)
+            SimpleChunk(SKilLID begin, SKilLID end, SKilLID count, const SKilLID bpo)
                     : Chunk(begin, end, count), bpo(bpo) { }
 
             virtual ~SimpleChunk() { }

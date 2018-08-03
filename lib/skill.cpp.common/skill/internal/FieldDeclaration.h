@@ -41,7 +41,7 @@ namespace skill {
                 return SkillException(message.str());
             }
 
-            inline SKilLID skillID(const api::Object* ref) const {
+            inline SKilLID skillID(const api::Object *ref) const {
                 return ref->id;
             }
 
@@ -68,19 +68,9 @@ namespace skill {
         protected:
             std::unordered_set<const restrictions::CheckableRestriction *> checkedRestrictions;
             std::unordered_set<const restrictions::FieldRestriction *> otherRestrictions;
-        public:
-            virtual size_t offset() const = 0;
-
-            //! offset cache for now
-            //! TODO replace by fixed async code
-            size_t awaitOffset;
-
-            /**
-             * write data belonging to this field to the stream
-             */
-            virtual void write(streams::MappedOutStream *out) const = 0;
 
         public:
+
             /**
              * @return true, iff there are checked restrictions
              */
@@ -99,9 +89,37 @@ namespace skill {
 
             /**
              * Read data from a mapped input stream and set it accordingly. This is invoked at the very end of state
-             * construction and done massively in parallel.
+             * construction and done in parallel.
+             *
+             * @param i current index of object to be processed
+             * @param h stop index, i.e. process until i==h
+             * @param in stream to be read
              */
-            virtual void read(const streams::MappedInStream *in, const Chunk *target) = 0;
+            virtual void rsc(SKilLID i, const SKilLID h, streams::MappedInStream *in) = 0;
+
+            /**
+             * Read data from a mapped input stream and set it accordingly. This is invoked at the very end of state
+             * construction and done in parallel.
+             */
+            virtual void rbc(streams::MappedInStream *in, const BulkChunk *target);
+
+            /**
+             * Calculate offset for a simple chunk.
+             *
+             * @note we do not append. Hence, there cannot be any bulk chunks on write
+             */
+            virtual size_t osc() const = 0;
+
+            //! offset cache for now
+            //! TODO replace by fixed async code
+            size_t awaitOffset;
+
+            /**
+             * write data belonging to this field to the stream
+             *
+             * @note we do not append. Hence, there cannot be any bulk chunks on write
+             */
+            virtual void wsc(streams::MappedOutStream *out) const = 0;
         };
     }
 }

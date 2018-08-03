@@ -82,7 +82,7 @@ void FileWriter::write(api::SkillFile *state, const std::string &path) {
         for (size_t i = 0; i < fieldQueue.size(); i++) {
             FieldDeclaration *f = fieldQueue[i];
             try {
-                f->awaitOffset = f->offset();
+                f->awaitOffset = f->osc();
             } catch (SkillException e) {
                 failed = true;
                 std::cerr << e.message << std::endl;
@@ -206,7 +206,7 @@ void FileWriter::writeFieldData(SkillFile *state, streams::FileOutputStream &out
         FieldDeclaration *f = fields[i];
         auto c = f->dataChunks.back();
         const auto map = source->clone(c->begin, c->end);
-        f->write(map);
+        f->wsc(map);
         delete map;
     }
 
