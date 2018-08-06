@@ -63,6 +63,7 @@ skill::streams::MappedOutStream *skill::streams::FileOutputStream::jumpAndMap(lo
 }
 
 void skill::streams::FileOutputStream::unmap(skill::streams::MappedOutStream *map) {
+    msync(map->base, (size_t) map->end - (size_t) map->base, MS_ASYNC);
     munmap(map->base, (size_t) map->end - (size_t) map->base);
     delete map;
 }
