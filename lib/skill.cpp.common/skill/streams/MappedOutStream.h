@@ -82,7 +82,7 @@ namespace skill {
                                 *(position++) = (uint8_t) ((v >> 35u));
                             } else {
                                 *(position++) = (uint8_t) ((0x80U | v >> 35u));
-                                if (v & 0x2000000000000U) {
+                                if (v < 0x2000000000000U) {
                                     *(position++) = (uint8_t) ((v >> 42u));
                                 } else {
                                     *(position++) = (uint8_t) ((0x80U | v >> 42u));
@@ -102,7 +102,7 @@ namespace skill {
         public:
 
             inline void v64(int64_t p) {
-                auto v = static_cast<uint64_t>(p);
+                auto v = ::skill::unsign(p);
 
                 if (v < 0x80U) {
                     *(position++) = (uint8_t) (v);

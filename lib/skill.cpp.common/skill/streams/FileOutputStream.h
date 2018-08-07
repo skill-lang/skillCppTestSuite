@@ -113,7 +113,7 @@ namespace skill {
             }
 
             inline void i64(int64_t p) {
-                auto v = static_cast<uint64_t>(p);
+                auto v = ::skill::unsign(p);
                 require(8);
                 *(position++) = (uint8_t) (v >> 56u);
                 *(position++) = (uint8_t) (v >> 48u);
@@ -126,7 +126,7 @@ namespace skill {
             }
 
             inline void v64(int64_t p) {
-                auto v = static_cast<uint64_t>(p);
+                auto v = ::skill::unsign(p);
                 require(9);
 
                 if (v < 0x80U) {

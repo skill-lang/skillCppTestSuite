@@ -146,7 +146,7 @@ namespace skill {
             V64FieldType() : StatelessFieldType<int64_t, 11, InStream::v64Box>() {}
 
             static uint64_t offset(int p) {
-                uint32_t v = static_cast<uint32_t>(p);
+                uint32_t v = ::skill::unsign(p);
                 return (v < 0x80U) ? 1 :
                        ((v < 0x4000U) ? 2 :
                         ((v < 0x200000U) ? 3 :
@@ -156,14 +156,14 @@ namespace skill {
             }
 
             static uint64_t offset(int64_t p) {
-                uint64_t v = static_cast<uint64_t>(p);
+                uint64_t v = ::skill::unsign(p);
                 return (v < 0x80U) ? 1 :
                        ((v < 0x4000U) ? 2 :
                         ((v < 0x200000U) ? 3 :
                          ((v < 0x10000000U) ? 4 :
                           ((v < 0x800000000U) ? 5 :
                            ((v < 0x40000000000U) ? 6 :
-                            ((v & 0x2000000000000U) ? 7 :
+                            ((v < 0x2000000000000U) ? 7 :
                              ((v < 0x100000000000000U) ? 8 : 9)
                             )
                            )
