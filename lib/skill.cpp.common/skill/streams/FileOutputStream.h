@@ -153,7 +153,7 @@ namespace skill {
                                         *(position++) = (uint8_t) ((v >> 35u));
                                     } else {
                                         *(position++) = (uint8_t) ((0x80U | v >> 35u));
-                                        if (v & 0x2000000000000U) {
+                                        if (v < 0x2000000000000U) {
                                             *(position++) = (uint8_t) ((v >> 42u));
                                         } else {
                                             *(position++) = (uint8_t) ((0x80U | v >> 42u));
