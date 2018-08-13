@@ -37,7 +37,7 @@ namespace skill {
 
         public:
             //! creates an empty iterator
-            DynamicDataIterator() : ts(), secondIndex(0), lastBlock(0), index(0), last(0) { }
+            DynamicDataIterator() : ts(), secondIndex(0), lastBlock(0), index(0), last(0) {}
 
             DynamicDataIterator(const StoragePool<T, B> *p)
                     : ts(p), secondIndex(0), lastBlock(p->blocks.size()),
@@ -66,7 +66,7 @@ namespace skill {
 
             DynamicDataIterator(const DynamicDataIterator<T, B> &iter)
                     : ts(iter.ts), secondIndex(iter.secondIndex), lastBlock(iter.lastBlock),
-                      index(iter.index), last(iter.last) { }
+                      index(iter.index), last(iter.last) {}
 
             DynamicDataIterator &operator++() {
                 index++;
@@ -117,11 +117,10 @@ namespace skill {
             //! move to next position and return current element
             T *next() {
                 const StoragePool<T, B> &p = (const StoragePool<T, B> &) *ts;
-                if (secondIndex <= lastBlock) {
-                    // @note increment happens before access, because we shifted data by 1
-                    index++;
-                    T *r = p.data[index];
-                    if (index == last) {
+                auto r = secondIndex <= lastBlock ? p.data[index + 1] : p.newObjects[index];
+                index++;
+                if (index == last) {
+                    if (secondIndex <= lastBlock) {
                         while (index == last && secondIndex < lastBlock) {
                             const auto &b = p.blocks[secondIndex];
                             index = b.bpo;
@@ -132,31 +131,29 @@ namespace skill {
                         if (index == last && secondIndex == lastBlock) {
                             secondIndex++;
                             while (ts.hasNext()) {
-                                const StoragePool<T, B> *t = (const StoragePool<T, B> *) ts.next();
-                                if (t->newObjects.size() != 0) {
+                                const StoragePool<T, B> &t = (const StoragePool<T, B> &) *ts;
+                                if (t.newObjects.size() != 0) {
                                     index = 0;
-                                    last = t->newObjects.size();
+                                    last = t.newObjects.size();
                                     break;
                                 }
+                                ++ts;
                             }
                         }
-                    }
-                    return r;
-                } else {
-                    T *r = p.newObjects[index];
-                    index++;
-                    if (index == last) {
+                    } else {
+                        ++ts;
                         while (ts.hasNext()) {
-                            const StoragePool<T, B> *t = (const StoragePool<T, B> *) ts.next();
-                            if (t->newObjects.size() != 0) {
+                            const StoragePool<T, B> &t = (const StoragePool<T, B> &) *ts;
+                            if (t.newObjects.size() != 0) {
                                 index = 0;
-                                last = t->newObjects.size();
+                                last = t.newObjects.size();
                                 break;
                             }
+                            ++ts;
                         }
                     }
-                    return r;
                 }
+                return r;
             }
 
             //! @return true, iff another element can be returned
@@ -190,7 +187,7 @@ namespace skill {
                 return *(secondIndex <= lastBlock ? p.data[index + 1] : p.newObjects[index]);
             }
 
-            T* operator->() const {
+            T *operator->() const {
                 const StoragePool<T, B> &p = (const StoragePool<T, B> &) *ts;
                 return secondIndex <= lastBlock ? p.data[index + 1] : p.newObjects[index];
             }

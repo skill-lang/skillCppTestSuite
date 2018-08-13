@@ -23,11 +23,11 @@ namespace skill {
 
     using restrictions::TypeRestriction;
     namespace internal {
-/**
- * @author Timm Felden
- * @note maybe, we could omit B, but we will keep it, just for the sake of type level
- * verification and architectural compatibility to other implementations
- */
+        /**
+         * @author Timm Felden
+         * @note maybe, we could omit B, but we will keep it, just for the sake of type level
+         * verification and architectural compatibility to other implementations
+         */
         template<class T, class B>
         class StoragePool : public AbstractStoragePool {
 
@@ -89,7 +89,7 @@ namespace skill {
                         const api::string_t *name, std::set<TypeRestriction *> *restrictions)
                     : AbstractStoragePool(typeID, superPool, name, restrictions),
                       book(nullptr),
-                      data(nullptr) { }
+                      data(nullptr) {}
 
             virtual ~StoragePool() {
                 if (book)
@@ -106,9 +106,16 @@ namespace skill {
                 return get(id);
             }
 
-            template <class... Args>
-            T* add(Args &&... args) {
-                T* rval = book->next();
+            virtual api::Object *make() {
+                T *rval = book->next();
+                new(rval) T(-1);
+                this->newObjects.push_back(rval);
+                return rval;
+            };
+
+            template<class... Args>
+            T *add(Args &&... args) {
+                T *rval = book->next();
                 new(rval) T(-1, std::forward<Args>(args)...);
                 this->newObjects.push_back(rval);
                 return rval;

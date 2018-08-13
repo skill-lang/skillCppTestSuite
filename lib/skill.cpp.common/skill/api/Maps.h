@@ -16,6 +16,16 @@ namespace skill {
             virtual bool hasNext() const = 0;
 
             virtual std::pair<Box, Box> next() = 0;
+
+            /**
+             * @return the current element
+             */
+            virtual std::pair<Box, Box> peek() = 0;
+
+            /**
+             * update the value at the current position
+             */
+            virtual void updateValue(Box v) = 0;
         };
 
         /**
@@ -33,7 +43,7 @@ namespace skill {
                 return r;
             }
 
-            virtual ~BoxedMap() { }
+            virtual ~BoxedMap() {}
 
             /**
              * k € this
@@ -66,11 +76,12 @@ namespace skill {
         template<typename K, typename V>
         class Map : public std::unordered_map<K, V>, public BoxedMap {
 
-            typedef typename std::unordered_map<K, V>::const_iterator iter;
+            typedef typename std::unordered_map<K, V>::iterator iter;
+            typedef typename std::unordered_map<K, V>::const_iterator citer;
 
             class Iterator : public MapIterator {
                 iter state;
-                const iter last;
+                const citer last;
 
                 static inline std::pair<Box, Box> boxx(const std::pair<K, V> &p) {
                     return std::pair<Box, Box>(box(p.first), box(p.second));
@@ -78,14 +89,31 @@ namespace skill {
 
             public:
 
-                Iterator(const Map *self) : state(self->begin()), last(self->end()) { }
+                Iterator(Map *self) : state(self->begin()), last(self->end()) {}
 
                 virtual bool hasNext() const {
                     return state != last;
                 }
 
+                /**
+                 * return the current element and move to the next
+                 */
                 virtual std::pair<Box, Box> next() {
                     return boxx(*state++);
+                }
+
+                /**
+                 * @return the current element
+                 */
+                virtual std::pair<Box, Box> peek() {
+                    return boxx(*state);
+                }
+
+                /**
+                 * update the value at the current position
+                 */
+                virtual void updateValue(Box v) {
+                    this->state->second = unbox<V>(v);
                 }
             };
 
@@ -98,9 +126,9 @@ namespace skill {
                 return r;
             }
 
-            Map() : std::unordered_map<K, V>() { }
+            Map() : std::unordered_map<K, V>() {}
 
-            virtual ~Map() { }
+            virtual ~Map() {}
 
             virtual bool contains(const Box &k) const {
                 return this->find(unbox<K>(k)) != this->end();

@@ -110,7 +110,7 @@ namespace skill {
         template<typename T, TypeID id,
                 api::Box Read(InStream &)/*,
                 uint64_t Offset(api::Box &target),
-                void Write(streams::MappedOutStream *out, api::Box &target)*/>
+                void Write(streams::MappedOutStream *file, api::Box &target)*/>
         struct StatelessFieldType : BuiltinFieldType<T, id> {
             StatelessFieldType() : BuiltinFieldType<T, id>() {}
 
@@ -243,6 +243,7 @@ namespace skill {
         struct SingleBaseTypeContainer : public BuiltinFieldType<T *, id> {
             const FieldType *const base;
         private:
+            //! we may survive a base that does not require destruction, as it is destroyed by somebody else
             const bool destroyBase;
         public:
 

@@ -31,11 +31,11 @@ namespace skill {
         template<typename T>
         class BasePool;
 
-/**
- * this class reflects all storage pool properties, that do not depend on types
- *
- * @note let us assume, that the Abstract storage pool is of type T and its base pool is of type B
- */
+        /**
+         * this class reflects all storage pool properties, that do not depend on types
+         *
+         * @note let us assume, that the Abstract storage pool is of type T and its base pool is of type B
+         */
         class AbstractStoragePool : public fieldTypes::FieldType {
             friend class FileWriter;
 
@@ -103,6 +103,12 @@ namespace skill {
              * @note if there is static knowledge that the pool is of type T, a cast to T* is always safe
              */
             virtual api::Object *getAsAnnotation(SKilLID id) const = 0;
+
+
+            /**
+             * @return a new instance with default field values
+             */
+            virtual api::Object *make() = 0;
 
             /**
              * restrictions of this pool

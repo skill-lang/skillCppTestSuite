@@ -18,7 +18,8 @@ skill::internal::AbstractStoragePool::AbstractStoragePool(TypeID typeID, Abstrac
           name(name),
           superPool(superPool),
           basePool(superPool ? superPool->basePool : this),
-          typeHierarchyHeight(superPool ? superPool->typeHierarchyHeight + 1 : 0) {
+          typeHierarchyHeight(superPool ? superPool->typeHierarchyHeight + 1 : 0),
+          dataFields() {
     if (superPool)
         superPool->subPools.push_back(this);
 }
