@@ -13,11 +13,11 @@ using namespace skill;
 using namespace internal;
 
 void FileWriter::write(api::SkillFile *state, const std::string &path) {
-    streams::FileOutputStream out(path, false);
 
     // fix pools to make size operations constant time (happens in amortized constant time)
-    for (auto &t : *state)
+    for (auto &t : *state) {
         t->fix(true);
+    }
 
     std::vector<FieldDeclaration *> fieldQueue;
 
@@ -43,6 +43,13 @@ void FileWriter::write(api::SkillFile *state, const std::string &path) {
             fieldQueue.push_back(f);
         }
     }
+    // release existing mmaps before creating a new file
+    if (state->fromFile) {
+        delete state->fromFile;
+        *const_cast<streams::FileInputStream **>(&state->fromFile) = nullptr;
+    }
+
+    streams::FileOutputStream out(path, false);
 
     //////////////////////////////
     // PHASE 2: Check & Reorder //
@@ -88,7 +95,7 @@ void FileWriter::write(api::SkillFile *state, const std::string &path) {
                 std::cerr << e.message << std::endl;
             }
         }
-        if(failed)
+        if (failed)
             throw SkillException("offset calculation failed");
     }
 
