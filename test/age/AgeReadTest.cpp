@@ -208,3 +208,13 @@ TEST(AgeReadTest, ReadDate) {
     }
     ASSERT_EQ(nullptr, sf->Age->get(0));
 }
+
+TEST(AgeReadTest, ReadWriteDate) {
+    auto sf = std::unique_ptr<SkillFile>(
+            SkillFile::open("../../src/test/resources/genbinary/[[empty]]/accept/date.sf"));
+    ASSERT_NE(nullptr, sf->Age);
+    ASSERT_EQ(0, (int) sf->Age->size());
+    sf->check();
+    sf->changePath("/tmp/out.sf");
+    sf->close();
+}
