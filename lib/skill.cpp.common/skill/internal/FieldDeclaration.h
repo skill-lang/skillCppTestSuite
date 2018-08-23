@@ -59,7 +59,7 @@ namespace skill {
                 for (auto c : dataChunks)
                     delete c;
                 dataChunks.clear();
-                dataChunks.push_back(new BulkChunk(-1, -1, newSize, 1));
+                dataChunks.push_back(new SimpleChunk(-1, -1, newSize, lbpo));
             }
 
             /**
