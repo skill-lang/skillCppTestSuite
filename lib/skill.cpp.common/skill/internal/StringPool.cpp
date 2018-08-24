@@ -54,8 +54,6 @@ String internal::StringPool::addLiteral(const char *target) {
 }
 
 void internal::StringPool::prepareAndWrite(skill::streams::FileOutputStream *out) {
-    prepareSerialization();
-
     // Insert new strings to the map;
     // this is where duplications with lazy strings will be detected and eliminated
     for (auto s : knownStrings) {

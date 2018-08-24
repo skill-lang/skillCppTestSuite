@@ -182,6 +182,7 @@ namespace skill {
             void prepareAndWrite(skill::streams::FileOutputStream *out);
 
         private:
+            friend class FileWriter;
             void prepareSerialization();
         };
     }

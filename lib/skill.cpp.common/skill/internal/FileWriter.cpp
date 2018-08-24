@@ -35,6 +35,8 @@ void FileWriter::write(api::SkillFile *state, const std::string &path) {
     // PHASE 1: Collect //
     //////////////////////
 
+    dynamic_cast<StringPool *>(state->strings)->prepareSerialization();
+
     for (auto t : *state) {
         for (FieldDeclaration *f : t->dataFields) {
             if (dynamic_cast<LazyField *>(f)) {
